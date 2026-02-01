@@ -2,123 +2,103 @@
 
 import Layout from "@/components/Layout";
 import { useRouter } from "next/navigation";
+import PasswordInput from "@/components/PasswordInput";
+import { useState } from "react";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const [newPassword, setNewPassword] = useState("PoshAI_2024!");
+  const [confirmPassword, setConfirmPassword] = useState("");
   return (
     <Layout>
-      <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-b from-background-light to-[#f0efe9] dark:from-background-dark dark:to-[#12110d]">
-        <div className="max-w-[480px] w-full bg-white dark:bg-[#27231b] p-8 md:p-10 rounded-xl shadow-2xl border border-[#e5e7eb] dark:border-[#393328]">
-          <div className="flex justify-center mb-6">
-            <div className="size-14 bg-primary/20 rounded-full flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-3xl!">lock_reset</span>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-mesh pt-30">
+        <div className="w-full max-w-[480px] space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          {/* Reset Password Card */}
+          <div className="bg-surface-dark/40 backdrop-blur-xl border border-border-dark p-8 md:p-12 rounded-xl shadow-2xl">
+            {/* Icon Header */}
+            <div className="flex flex-col items-center mb-8">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                <span className="material-symbols-outlined text-primary text-3xl">
+                  lock_reset
+                </span>
+              </div>
+              <h1 className="text-gray-200 text-3xl font-bold text-center tracking-tight">
+                Create New Password
+              </h1>
+              <p className="text-gray-400 text-base font-normal text-center mt-3">
+                Your new password must be different from previous used passwords.
+              </p>
+            </div>
+
+            {/* Form Section */}
+            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+              {/* New Password Field */}
+              <PasswordInput
+                id="new-password"
+                label="New Password"
+                value={newPassword}
+                onChange={setNewPassword}
+                showStrength={true}
+                required={true}
+              />
+
+              {/* Confirm Password Field */}
+              <PasswordInput
+                id="confirm-password"
+                label="Confirm New Password"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                required={true}
+              />
+
+              {/* Requirement List */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-1.5 text-primary">
+                  <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                  <span className="text-gray-300">At least 8 characters</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-primary">
+                  <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                  <span className="text-gray-300">One uppercase letter</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-gray-400">
+                  <span className="material-symbols-outlined text-[14px]">radio_button_unchecked</span>
+                  <span className="text-gray-400">One special character</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-primary">
+                  <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                  <span className="text-gray-300">One number</span>
+                </div>
+              </div>
+
+              {/* Primary Action */}
+              <div className="pt-2">
+                <button className="w-full h-14 bg-primary hover:bg-primary/90 text-background-dark text-base font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group" type="submit">
+                  <span>Update Password</span>
+                  <span className="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">
+                    arrow_forward
+                  </span>
+                </button>
+              </div>
+            </form>
+
+            {/* Footer Navigation */}
+            <div className="mt-10 pt-8 border-t border-border-dark/50 text-center">
+              <button
+                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group"
+                onClick={() => router.push('/login')}
+              >
+                <span className="material-symbols-outlined text-lg">arrow_back</span>
+                Back to Sign In
+              </button>
             </div>
           </div>
 
-          {/* Headline Section */}
-          <h1 className="text-center text-2xl md:text-3xl font-bold mb-2 font-display">
-            Create New Password
-          </h1>
-          <p className="text-[#6b7280] dark:text-[#bab09c] text-sm text-center mb-8">
-            Your new password must be different from previous used passwords.
-          </p>
-
-          {/* Form Section */}
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-            {/* New Password Field */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                New Password
-              </label>
-              <div className="relative flex w-full items-stretch rounded-lg shadow-sm">
-                <input
-                  className="form-input flex w-full min-w-0 flex-1 rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#544c3b] bg-[#27231b] focus:border-primary h-14 placeholder:text-[#bab09c]/50 px-4 text-base font-normal"
-                  placeholder="••••••••"
-                  type="password"
-                  defaultValue="PoshAI_2024!"
-                />
-                <button
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#bab09c] hover:text-primary transition-colors"
-                  type="button"
-                >
-                  <span className="material-symbols-outlined">visibility</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Password Strength Component */}
-            <div className="bg-[#f8f7f5]/10 dark:bg-black/20 p-4 rounded-lg border border-[#544c3b]/30">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm font-medium">
-                    Strength: <span className="text-primary">Medium</span>
-                  </p>
-                  <p className="text-xs font-bold text-primary">65%</p>
-                </div>
-                <div className="h-1.5 w-full bg-[#544c3b] rounded-full overflow-hidden">
-                  <div className="h-full bg-primary transition-all duration-500" style={{ width: "65%" }}></div>
-                </div>
-                <p className="text-[#bab09c] text-xs mt-2 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-xs!">info</span>
-                  Add a special character to make it stronger.
-                </p>
-              </div>
-            </div>
-
-            {/* Confirm Password Field */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Confirm New Password
-              </label>
-              <div className="relative flex w-full items-stretch rounded-lg shadow-sm">
-                <input
-                  className="form-input flex w-full min-w-0 flex-1 rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#544c3b] bg-[#27231b] focus:border-primary h-14 placeholder:text-[#bab09c]/50 px-4 text-base font-normal"
-                  placeholder="••••••••"
-                  type="password"
-                />
-                <button
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#bab09c] hover:text-primary transition-colors"
-                  type="button"
-                >
-                  <span className="material-symbols-outlined">visibility</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Requirement List (Visual Only) */}
-            <ul className="grid grid-cols-2 gap-2 text-xs text-[#bab09c]">
-              <li className="flex items-center gap-1.5 text-primary">
-                <span className="material-symbols-outlined text-[14px]!">check_circle</span>
-                At least 8 characters
-              </li>
-              <li className="flex items-center gap-1.5 text-primary">
-                <span className="material-symbols-outlined text-[14px]!">check_circle</span>
-                One uppercase letter
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[14px]!">radio_button_unchecked</span>
-                One special character
-              </li>
-              <li className="flex items-center gap-1.5 text-primary">
-                <span className="material-symbols-outlined text-[14px]!">check_circle</span>
-                One number
-              </li>
-            </ul>
-
-            {/* Primary Action */}
-            <button className="w-full flex items-center justify-center rounded-lg h-14 bg-primary text-background-dark text-base font-bold transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
-              Update Password
-            </button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <button
-              className="text-sm text-[#bab09c] hover:text-primary transition-colors flex items-center justify-center gap-1 font-medium"
-              onClick={() => router.push('/login')}
-            >
-              <span className="material-symbols-outlined text-sm!">arrow_back</span>
-              Back to Sign In
-            </button>
+          {/* Trust Badges / Social Microcopy */}
+          <div className="text-center space-y-4 opacity-60">
+            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-bold">
+              Secure Password Reset
+            </p>
           </div>
         </div>
       </div>

@@ -2,21 +2,25 @@
 
 import Layout from "@/components/Layout";
 import { useRouter } from "next/navigation";
+import TikTokLogo from "@/components/TikTok";
+import PasswordInput from "@/components/PasswordInput";
+import { useState } from "react";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   return (
     <Layout>
-      <div className="min-h-screen flex items-center justify-center relative py-12 px-4 overflow-hidden ai-bg-pattern">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-mesh pt-30">
         {/* Abstract AI Background Elements */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[150px]"></div>
         </div>
         
-        <div className="flex flex-col w-full max-w-[500px] z-10">
-          {/* Glass Registration Card */}
-          <div className="glass-card rounded-xl p-8 md:p-10 shadow-2xl">
+        <div className="flex flex-col w-full max-w-[480px] z-10">
+          <div className="bg-surface-dark/40 backdrop-blur-xl border border-border-dark p-8 md:p-12 rounded-xl shadow-2xl">
             {/* Page Heading */}
             <div className="flex flex-col gap-2 mb-8 text-center md:text-left">
               <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em]">
@@ -52,28 +56,23 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Password Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-white text-sm font-medium leading-none">
-                    Password
-                  </label>
-                  <input
-                    className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#544c3b] bg-[#27231b] h-12 placeholder:text-white/20 px-4 text-base font-normal"
-                    placeholder="••••••••"
-                    type="password"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-white text-sm font-medium leading-none">
-                    Confirm
-                  </label>
-                  <input
-                    className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#544c3b] bg-[#27231b] h-12 placeholder:text-white/20 px-4 text-base font-normal"
-                    placeholder="••••••••"
-                    type="password"
-                  />
-                </div>
+              {/* Password Fields */}
+              <div className="space-y-4">
+                <PasswordInput
+                  id="password"
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  showStrength={true}
+                  required={true}
+                />
+                <PasswordInput
+                  id="confirm-password"
+                  label="Confirm Password"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  required={true}
+                />
               </div>
 
               {/* Main Register Button */}
@@ -99,9 +98,12 @@ export default function RegisterPage() {
                   className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-[#393328] bg-[#27231b]/50 hover:bg-[#393328] transition-colors group"
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-white group-hover:text-primary">
-                    google
-                  </span>
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
                   <span className="text-[10px] text-[#bab09c] uppercase font-bold tracking-tighter">
                     Google
                   </span>
@@ -111,13 +113,7 @@ export default function RegisterPage() {
                   className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-[#393328] bg-[#27231b]/50 hover:bg-[#393328] transition-colors group"
                   type="button"
                 >
-                  <svg
-                    className="w-5 h-5 fill-white group-hover:fill-primary"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.03 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.9-.32-1.98-.23-2.81.31-.75.42-1.24 1.25-1.33 2.1-.1.7.1 1.41.53 1.95.4.49 1.03.75 1.66.73 1.26.03 2.38-.93 2.45-2.18.02-4.12.03-8.24.02-12.36z"></path>
-                  </svg>
+                  <TikTokLogo className="w-6 h-6" />
                   <span className="text-[10px] text-[#bab09c] uppercase font-bold tracking-tighter">
                     TikTok
                   </span>
