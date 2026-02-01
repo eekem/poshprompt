@@ -1,6 +1,10 @@
+"use client";
+
 import Layout from "@/components/Layout";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   return (
     <Layout>
       <section className="relative pt-40 pb-20 hero-gradient min-h-screen flex items-center overflow-hidden">
@@ -21,10 +25,10 @@ export default function Home() {
             Battle in real-time challenges, level up your rank, and claim loot.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <button className="w-full sm:w-auto bg-primary hover:bg-primary-accent text-black px-10 py-5 rounded-xl text-lg font-black transition-all transform hover:scale-105 shadow-xl shadow-primary/20 cursor-pointer">
+            <button className="w-full sm:w-auto bg-primary hover:bg-primary-accent text-black px-10 py-5 rounded-xl text-lg font-black transition-all transform hover:scale-105 shadow-xl shadow-primary/20 cursor-pointer" onClick={() => router.push('/register')}>
               Start Your First Challenge
             </button>
-            <button className="w-full sm:w-auto border border-border-dark bg-white/5 hover:bg-white/10 px-10 py-5 rounded-xl text-lg font-bold transition-all backdrop-blur-sm cursor-pointer">
+            <button className="w-full sm:w-auto border border-border-dark bg-white/5 hover:bg-white/10 px-10 py-5 rounded-xl text-lg font-bold transition-all backdrop-blur-sm cursor-pointer" onClick={() => router.push('/leaderboard')}>
               View Leaderboard
             </button>
           </div>

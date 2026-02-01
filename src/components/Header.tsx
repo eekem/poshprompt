@@ -1,4 +1,9 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 export default function Header() {
+  const router = useRouter();
   return (
     <nav className="fixed top-0 w-full z-50 glass-nav border-b border-border-dark">
       <div className="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
@@ -11,14 +16,14 @@ export default function Header() {
           <h2 className="text-xl font-bold tracking-tight uppercase italic">PoshPrompt</h2>
         </div>
         <div className="hidden md:flex items-center gap-10">
-          <a className="text-sm font-medium hover:text-primary transition-colors tracking-wide" href="#">Arena</a>
-          <a className="text-sm font-medium hover:text-primary transition-colors tracking-wide" href="#">Leaderboard</a>
-          <a className="text-sm font-medium hover:text-primary transition-colors tracking-wide" href="#">Features</a>
-          <a className="text-sm font-medium hover:text-primary transition-colors tracking-wide" href="#">Pricing</a>
+          <button className="text-sm font-medium hover:text-primary transition-colors tracking-wide" onClick={() => router.push('/arena')}>Arena</button>
+          <button className="text-sm font-medium hover:text-primary transition-colors tracking-wide" onClick={() => router.push('/leaderboard')}>Leaderboard</button>
+          <button className="text-sm font-medium hover:text-primary transition-colors tracking-wide" onClick={() => router.push('/features')}>Features</button>
+          <button className="text-sm font-medium hover:text-primary transition-colors tracking-wide" onClick={() => router.push('/pricing')}>Pricing</button>
         </div>
         <div className="flex items-center gap-4">
-          <button className="px-5 py-2 text-sm font-bold hover:text-primary transition-colors cursor-pointer">Login</button>
-          <button className="bg-primary hover:bg-primary-accent text-black px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all shadow-lg shadow-primary/20 cursor-pointer">
+          <button className="px-5 py-2 text-sm font-bold hover:text-primary transition-colors cursor-pointer" onClick={() => router.push('/login')}>Login</button>
+          <button className="bg-primary hover:bg-primary-accent text-black px-6 py-2.5 rounded-lg text-sm font-black tracking-wide transition-all shadow-lg shadow-primary/20 cursor-pointer" onClick={() => router.push('/register')}>
             Join the Arena
           </button>
         </div>

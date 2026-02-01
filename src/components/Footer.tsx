@@ -1,4 +1,9 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 export default function Footer() {
+  const router = useRouter();
   return (
     <footer className="py-16 border-t border-border-dark bg-background-dark text-amber-100/30">
       <div className="max-w-[1200px] mx-auto px-6">
@@ -16,27 +21,27 @@ export default function Footer() {
               The premier destination for elite prompt engineers. Battle, rank up, and earn rewards in the most advanced AI arena ever built.
             </p>
             <div className="flex gap-6">
-              <a className="hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">public</span></a>
-              <a className="hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">forum</span></a>
-              <a className="hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">terminal</span></a>
+              <a className="hover:text-primary transition-colors" href="https://twitter.com/poshprompt" target="_blank" rel="noopener noreferrer"><span className="material-symbols-outlined">public</span></a>
+              <a className="hover:text-primary transition-colors" href="https://discord.gg/poshprompt" target="_blank" rel="noopener noreferrer"><span className="material-symbols-outlined">forum</span></a>
+              <a className="hover:text-primary transition-colors" href="https://github.com/poshprompt" target="_blank" rel="noopener noreferrer"><span className="material-symbols-outlined">terminal</span></a>
             </div>
           </div>
           <div>
             <h4 className="text-white font-bold uppercase tracking-widest text-sm mb-6">Platform</h4>
             <div className="flex flex-col gap-4 text-sm">
-              <a className="hover:text-primary transition-colors" href="#">Arena</a>
-              <a className="hover:text-primary transition-colors" href="#">Leaderboard</a>
-              <a className="hover:text-primary transition-colors" href="#">Challenges</a>
-              <a className="hover:text-primary transition-colors" href="#">Documentation</a>
+              <button className="hover:text-primary transition-colors text-left" onClick={() => router.push('/arena')}>Arena</button>
+              <button className="hover:text-primary transition-colors text-left" onClick={() => router.push('/leaderboard')}>Leaderboard</button>
+              <button className="hover:text-primary transition-colors text-left" onClick={() => router.push('/challenges')}>Challenges</button>
+              <button className="hover:text-primary transition-colors text-left" onClick={() => router.push('/docs')}>Documentation</button>
             </div>
           </div>
           <div>
             <h4 className="text-white font-bold uppercase tracking-widest text-sm mb-6">Company</h4>
             <div className="flex flex-col gap-4 text-sm">
-              <a className="hover:text-primary transition-colors" href="#">About Us</a>
-              <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-              <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
-              <a className="hover:text-primary transition-colors" href="#">Support</a>
+              <button className="hover:text-primary transition-colors text-left" onClick={() => router.push('/about')}>About Us</button>
+              <button className="hover:text-primary transition-colors text-left" onClick={() => router.push('/privacy')}>Privacy Policy</button>
+              <button className="hover:text-primary transition-colors text-left" onClick={() => router.push('/terms')}>Terms of Service</button>
+              <button className="hover:text-primary transition-colors text-left" onClick={() => router.push('/support')}>Support</button>
             </div>
           </div>
         </div>
