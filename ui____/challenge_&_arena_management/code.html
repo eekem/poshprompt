@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PoshPrompt | Challenge &amp; Arena Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f4af25",
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#181611",
+                        "surface-dark": "#27231b",
+                        "border-dark": "#393328",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #181611;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #393328;
+            border-radius: 10px;
+        }
+        .live-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-72 bg-background-light dark:bg-background-dark border-r border-slate-200 dark:border-border-dark flex flex-col justify-between p-6">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3">
+<div class="bg-primary rounded-lg p-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-background-dark font-bold">terminal</span>
+</div>
+<div>
+<h1 class="text-lg font-bold leading-tight">PoshPrompt</h1>
+<p class="text-xs text-slate-500 dark:text-[#bab09c]">Super Admin Panel</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-[#bab09c] hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-background-dark font-bold" href="#">
+<span class="material-symbols-outlined">swords</span>
+<span class="text-sm">Arena Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-[#bab09c] hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">User Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-[#bab09c] hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-sm font-medium">Prompt Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-[#bab09c] hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-border-dark">
+<div class="h-10 w-10 rounded-full bg-cover bg-center" data-alt="Admin user profile avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBL3f67dv2ffzwBDZdnWbJTQArZyFtfqRSnnRcddG1xT6cI7iRXaFZqivVUcC9prj4slaSx-M13rHchdUEP57WsSbgHtufHER7Vrj-LEhARc1pJ_LyeNmNLSZfiIT7hS3-dVpytldb2dcsWmethxXFIWVOkRZMnaUX1gr2KFxAM6-FM3myC_KosPxXMkuJKRH64-yHg_5POD0JtcU4Xbr8Q5mse9VaPwX8bs1D_Pu6mhBLwHhjwII-tE8IJW0pdPHxcyo4Af5LBiF3m')"></div>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate">Alex Rivard</p>
+<p class="text-xs text-slate-500 dark:text-[#bab09c] truncate">Head of Operations</p>
+</div>
+</div>
+<button class="w-full py-3 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-sm">rocket_launch</span>
+<span>Launch New Arena</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto custom-scrollbar bg-background-light dark:bg-background-dark">
+<div class="max-w-6xl mx-auto p-8 flex flex-col gap-8">
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between items-end gap-4">
+<div class="flex flex-col gap-1">
+<h2 class="text-4xl font-black tracking-tight uppercase italic">Arena &amp; Challenge</h2>
+<p class="text-slate-500 dark:text-[#bab09c]">Configure competition rounds and monitor live prompt submissions.</p>
+</div>
+<div class="flex gap-3">
+<div class="flex flex-col items-end px-4 border-r border-slate-200 dark:border-border-dark">
+<span class="text-[10px] uppercase font-bold text-slate-400 dark:text-[#bab09c]">Active Prize Pool</span>
+<span class="text-xl font-bold text-primary">$42,500.00</span>
+</div>
+<button class="bg-slate-100 dark:bg-border-dark text-slate-700 dark:text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-base">leaderboard</span>
+                            View Global Stats
+                        </button>
+</div>
+</div>
+<!-- Challenge Creation Section -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 flex flex-col gap-6">
+<div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-border-dark shadow-sm">
+<h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">add_circle</span>
+                                Create New Challenge
+                            </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-4">
+<label class="flex flex-col gap-2">
+<span class="text-sm font-bold text-slate-600 dark:text-[#bab09c] uppercase tracking-wider">Challenge Title</span>
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-lg p-3 text-sm focus:ring-primary focus:border-primary outline-none transition-all" placeholder="e.g., Cyberpunk Neon Dreams" type="text"/>
+</label>
+<div class="grid grid-cols-2 gap-4">
+<label class="flex flex-col gap-2">
+<span class="text-sm font-bold text-slate-600 dark:text-[#bab09c] uppercase tracking-wider">Base Prize Pool</span>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-lg p-3 pl-7 text-sm focus:ring-primary focus:border-primary outline-none transition-all" placeholder="500" type="number"/>
+</div>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-sm font-bold text-slate-600 dark:text-[#bab09c] uppercase tracking-wider">Duration (Hours)</span>
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-lg p-3 text-sm focus:ring-primary focus:border-primary outline-none transition-all" placeholder="24" type="number"/>
+</label>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="text-sm font-bold text-slate-600 dark:text-[#bab09c] uppercase tracking-wider">XP Difficulty</span>
+<span class="text-sm font-bold text-primary">Lvl 7</span>
+</div>
+<input class="w-full h-2 bg-slate-200 dark:bg-border-dark rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+<div class="flex justify-between text-[10px] text-slate-400 uppercase font-medium">
+<span>Beginner</span>
+<span>Legendary</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<span class="text-sm font-bold text-slate-600 dark:text-[#bab09c] uppercase tracking-wider">Target Reference Asset</span>
+<div class="flex-1 min-h-[180px] border-2 border-dashed border-slate-200 dark:border-border-dark rounded-xl bg-slate-50 dark:bg-background-dark flex flex-col items-center justify-center p-6 text-center group cursor-pointer hover:border-primary transition-colors">
+<div class="h-16 w-16 bg-white dark:bg-surface-dark rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-primary">cloud_upload</span>
+</div>
+<p class="text-sm font-bold mb-1">Upload target image/text</p>
+<p class="text-xs text-slate-500 dark:text-[#bab09c]">Drag and drop or click to browse files</p>
+</div>
+</div>
+</div>
+<div class="mt-8 flex justify-end gap-3">
+<button class="px-6 py-2.5 rounded-lg font-bold text-sm text-slate-500 dark:text-[#bab09c] hover:bg-slate-100 dark:hover:bg-border-dark transition-colors">Save as Draft</button>
+<button class="bg-primary text-background-dark px-8 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:brightness-110 shadow-lg shadow-primary/20 transition-all">
+<span class="material-symbols-outlined text-base">rocket_launch</span>
+                                    Launch Challenge
+                                </button>
+</div>
+</div>
+</div>
+<!-- Live Quick Stats -->
+<div class="flex flex-col gap-4">
+<div class="bg-white dark:bg-surface-dark p-5 rounded-xl border border-slate-200 dark:border-border-dark flex items-center gap-4">
+<div class="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-500">group</span>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-400 dark:text-[#bab09c] uppercase">Live Players</p>
+<p class="text-2xl font-black">1,284</p>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark p-5 rounded-xl border border-slate-200 dark:border-border-dark flex items-center gap-4">
+<div class="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-500">history_edu</span>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-400 dark:text-[#bab09c] uppercase">Submissions Today</p>
+<p class="text-2xl font-black">8,492</p>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark p-5 rounded-xl border border-slate-200 dark:border-border-dark flex items-center gap-4">
+<div class="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">timer</span>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-400 dark:text-[#bab09c] uppercase">Avg. Round Time</p>
+<p class="text-2xl font-black">4h 22m</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Rounds Table -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-[22px] font-bold tracking-tight">Active Rounds</h3>
+<div class="flex gap-2">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-sm">search</span>
+<input class="bg-slate-50 dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg py-1.5 pl-9 pr-4 text-xs outline-none focus:ring-1 focus:ring-primary" placeholder="Filter arenas..." type="text"/>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-background-dark/50 border-b border-slate-200 dark:border-border-dark">
+<th class="p-4 text-xs font-bold uppercase text-slate-500 dark:text-[#bab09c]">Arena ID</th>
+<th class="p-4 text-xs font-bold uppercase text-slate-500 dark:text-[#bab09c]">Challenge</th>
+<th class="p-4 text-xs font-bold uppercase text-slate-500 dark:text-[#bab09c]">Time Remaining</th>
+<th class="p-4 text-xs font-bold uppercase text-slate-500 dark:text-[#bab09c]">Submissions</th>
+<th class="p-4 text-xs font-bold uppercase text-slate-500 dark:text-[#bab09c]">Prize Pool</th>
+<th class="p-4 text-xs font-bold uppercase text-slate-500 dark:text-[#bab09c]">Difficulty</th>
+<th class="p-4 text-xs font-bold uppercase text-slate-500 dark:text-[#bab09c] text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-border-dark">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-background-dark/30 transition-colors">
+<td class="p-4 text-xs font-mono font-bold text-slate-400">#ARENA-402</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-lg bg-cover bg-center border border-slate-200 dark:border-border-dark" data-alt="Abstract vibrant digital art target" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCjUgv2ogwqhwiUEz7MGPMsy2POkIITKrC7Sxe2mdqDTJnOSnerRU5FlOwolryw8IYC3-KWtu8ozCyHFHsM1g2RjJ6pzzYyaMWSSsmGaxjc2cJv09J-tPDwj-EMUhYJLHiMhTGDvGYbX_uveRFxW-n8Qj447f-qGV-EbI4cQms0AKAW615WKWU4z-nW4_Xyo0q37X2M9DbC6UOCkhM1h28lHScSyNa2iKJtdESIbN91GjXf8WYoh9zQmiXQ9TKAGL_FzFbGH8BwB9eh')"></div>
+<div>
+<p class="text-sm font-bold">Cyberpunk Alleyway</p>
+<div class="flex items-center gap-1.5">
+<span class="h-2 w-2 rounded-full bg-green-500 live-pulse"></span>
+<span class="text-[10px] font-bold uppercase text-green-500 tracking-tighter">Live Now</span>
+</div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex flex-col gap-1">
+<p class="text-sm font-bold font-mono">02:45:12</p>
+<div class="w-full h-1 bg-slate-100 dark:bg-background-dark rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 65%"></div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold">428</span>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">+12 new</span>
+</div>
+</td>
+<td class="p-4">
+<p class="text-sm font-bold">$2,500.00</p>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 rounded text-[10px] font-bold bg-orange-500/10 text-orange-500 uppercase">Extreme</span>
+</td>
+<td class="p-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-background-dark/30 transition-colors">
+<td class="p-4 text-xs font-mono font-bold text-slate-400">#ARENA-398</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-lg bg-cover bg-center border border-slate-200 dark:border-border-dark" data-alt="Futuristic glass architecture target" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCN_JBfLtdPT4NZMUc1_u4LYFaoZjA8PynjB696BdsJzlJV_mCmY3B_GFlwEsfEyH1EpSAAXVbWax1Ukonmi1an5z33knselYHUqOBQzJKZVdEHxLCGGt4qK6Nwt7wDV8IqRIEKs9hbIXEr99lND-tO98UHIWFmZOkTSpGA_f5FZyz5nvJeUjAKJ205l7ZnYFEy0i2BZ-KKIsY3PiR8A1phEj2PzYCfrsZdF7xJ58JuWPyB84QQ0d3BLmlBH24RU_Re9fFSUNN4NXMG')"></div>
+<div>
+<p class="text-sm font-bold">Glass Monoliths</p>
+<div class="flex items-center gap-1.5">
+<span class="h-2 w-2 rounded-full bg-green-500 live-pulse"></span>
+<span class="text-[10px] font-bold uppercase text-green-500 tracking-tighter">Live Now</span>
+</div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex flex-col gap-1">
+<p class="text-sm font-bold font-mono">14:22:05</p>
+<div class="w-full h-1 bg-slate-100 dark:bg-background-dark rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 20%"></div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold">1,102</span>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">+45 new</span>
+</div>
+</td>
+<td class="p-4">
+<p class="text-sm font-bold">$12,000.00</p>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 rounded text-[10px] font-bold bg-blue-500/10 text-blue-500 uppercase">Medium</span>
+</td>
+<td class="p-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-background-dark/30 transition-colors">
+<td class="p-4 text-xs font-mono font-bold text-slate-400">#ARENA-395</td>
+<td class="p-4">
+<div class="flex items-center gap-3 opacity-60">
+<div class="h-10 w-10 rounded-lg bg-cover bg-center border border-slate-200 dark:border-border-dark" data-alt="Minimalist dark texture target" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCHFKqS1P4XyKTBznkh3xAJDR-w_B0S_mdcPGWBwqdGgwVapmdotsCOw4QjXeL5Kl78q8q6cPfXtBnHXgLvGs8Zmo9J7MTcD4-zOds20v20JdO38PNzUe1t2LxxhqBS6HQmCp4tBZXJRLLgC8p5fKNSL7olfTZriH-5FsRwCNO73s2iaP33RiSrE6nybLpOUiqoZl1BTQHKb7csul5zaUX_-n6MxJSZzdhJMtYUJRIOeO6ZzNHjEXFPC0dFr5WE5-Mwkj-Jogw04aMk')"></div>
+<div>
+<p class="text-sm font-bold">Shadow Play</p>
+<div class="flex items-center gap-1.5">
+<span class="h-2 w-2 rounded-full bg-slate-400"></span>
+<span class="text-[10px] font-bold uppercase text-slate-400 tracking-tighter">Ending Soon</span>
+</div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex flex-col gap-1">
+<p class="text-sm font-bold font-mono text-red-500">00:04:45</p>
+<div class="w-full h-1 bg-slate-100 dark:bg-background-dark rounded-full overflow-hidden">
+<div class="bg-red-500 h-full" style="width: 98%"></div>
+</div>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold">2,491</span>
+</div>
+</td>
+<td class="p-4">
+<p class="text-sm font-bold">$25,000.00</p>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 rounded text-[10px] font-bold bg-primary/20 text-primary uppercase">Elite</span>
+</td>
+<td class="p-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 bg-slate-50 dark:bg-background-dark/50 flex items-center justify-between border-t border-slate-200 dark:border-border-dark">
+<p class="text-xs text-slate-500 dark:text-[#bab09c]">Showing 3 active rounds out of 12 total</p>
+<div class="flex gap-2">
+<button class="h-8 w-8 rounded bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="h-8 w-8 rounded bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

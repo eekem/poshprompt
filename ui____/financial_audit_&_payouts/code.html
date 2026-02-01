@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Audit &amp; Payouts | PoshPrompt Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f4af25",
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#181611",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Space Grotesk", sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #221c10;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #393328;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="border-b border-solid border-[#393328] bg-background-light dark:bg-background-dark px-6 lg:px-20 py-3 sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between gap-8">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 flex items-center justify-center bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight">PoshPrompt Admin</h2>
+</div>
+<div class="hidden md:flex items-center gap-6 ml-4">
+<a class="text-[#bab09c] hover:text-white text-sm font-medium transition-colors" href="#">Dashboard</a>
+<a class="text-[#bab09c] hover:text-white text-sm font-medium transition-colors" href="#">Competitions</a>
+<a class="text-[#bab09c] hover:text-white text-sm font-medium transition-colors" href="#">Users</a>
+<a class="text-white border-b-2 border-primary pb-1 text-sm font-medium" href="#">Finance</a>
+</div>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4">
+<label class="hidden lg:flex items-center min-w-64 max-w-md h-10">
+<div class="flex w-full items-stretch rounded-lg bg-[#393328] px-3">
+<span class="material-symbols-outlined text-[#bab09c] self-center text-xl">search</span>
+<input class="w-full border-none bg-transparent text-white focus:ring-0 placeholder:text-[#bab09c] text-sm" placeholder="Search transactions, wallets, or users..."/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-[#393328] text-white hover:bg-[#4a4335] transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" data-alt="Administrator profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC5U5yGwR-H98KLFvmRUq1ycyj9orpg5u76TeoVlLC8WQ0Pukof2Reb31Y3ZmdoPvRLkpQCKfIz5sLAdXTrsO49g7hJFrGM06Iog3yRiCYaPg_i3ZQ9BXXcs9wkdS0jwaBNLByamAq3nIjhleKh61FS2yAMsZ1m-O7d1AjR57e1jQHzXZIyqXBkEnL4guI3v0xBMajzefgCGRQubBo5cn03ygMLvF_V_gStde-lEUdiQTJCoFe_g43_YMQRAjcieg_iZdK8fZohZhOM");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[1400px] mx-auto p-6 lg:p-10">
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between items-end gap-4 mb-8">
+<div class="flex flex-col gap-2">
+<h1 class="text-white text-4xl font-black leading-tight tracking-tight">Financial Audit &amp; Payouts</h1>
+<p class="text-[#bab09c] text-base max-w-2xl">Monitor real-time system wallet health, verify cross-platform settlement status, and authorize pending prize disbursements.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center justify-center gap-2 rounded-lg h-11 px-5 bg-[#393328] text-white text-sm font-bold hover:bg-[#4a4335] transition-colors">
+<span class="material-symbols-outlined text-lg">sync</span>
+<span>Live Refresh</span>
+</button>
+<button class="flex items-center justify-center gap-2 rounded-lg h-11 px-5 bg-primary text-background-dark text-sm font-bold hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-lg">download</span>
+<span>Export Ledger</span>
+</button>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="flex flex-col gap-3 rounded-xl p-6 border border-[#393328] bg-[#1d1b16] relative overflow-hidden">
+<div class="flex justify-between items-start">
+<p class="text-[#bab09c] text-sm font-medium">Tron Wallet (USDT)</p>
+<span class="material-symbols-outlined text-[#0bda19] text-xl">account_balance_wallet</span>
+</div>
+<p class="text-white tracking-tight text-3xl font-bold">12,450.00 <span class="text-sm font-normal text-[#bab09c]">USDT</span></p>
+<div class="flex items-center gap-2">
+<span class="text-[#0bda19] text-xs font-bold bg-[#0bda19]/10 px-1.5 py-0.5 rounded">+2.4%</span>
+<span class="text-[#bab09c] text-xs">vs last 24h</span>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-transparent opacity-20"></div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl p-6 border border-[#393328] bg-[#1d1b16]">
+<div class="flex justify-between items-start">
+<p class="text-[#bab09c] text-sm font-medium">Paystack Balance</p>
+<span class="material-symbols-outlined text-primary text-xl">payments</span>
+</div>
+<p class="text-white tracking-tight text-3xl font-bold">₦2,450,000</p>
+<div class="flex items-center gap-2">
+<span class="text-[#fa3f38] text-xs font-bold bg-[#fa3f38]/10 px-1.5 py-0.5 rounded">-1.2%</span>
+<span class="text-[#bab09c] text-xs">settlement pending</span>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl p-6 border border-[#393328] bg-[#1d1b16]">
+<div class="flex justify-between items-start">
+<p class="text-[#bab09c] text-sm font-medium">Pending Approvals</p>
+<span class="material-symbols-outlined text-primary text-xl">hourglass_empty</span>
+</div>
+<p class="text-white tracking-tight text-3xl font-bold">42 <span class="text-sm font-normal text-[#bab09c]">requests</span></p>
+<div class="flex items-center gap-2">
+<span class="text-primary text-xs font-bold bg-primary/10 px-1.5 py-0.5 rounded">Action Required</span>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl p-6 border border-[#393328] bg-[#1d1b16]">
+<div class="flex justify-between items-start">
+<p class="text-[#bab09c] text-sm font-medium">Lifetime Payouts</p>
+<span class="material-symbols-outlined text-[#0bda19] text-xl">verified</span>
+</div>
+<p class="text-white tracking-tight text-3xl font-bold">$158,200</p>
+<div class="flex items-center gap-2">
+<span class="text-[#0bda19] text-xs font-bold bg-[#0bda19]/10 px-1.5 py-0.5 rounded">+12%</span>
+<span class="text-[#bab09c] text-xs">overall growth</span>
+</div>
+</div>
+</div>
+<!-- Ledger Section -->
+<div class="bg-[#1d1b16] rounded-xl border border-[#393328] overflow-hidden">
+<!-- Tabs & Filters -->
+<div class="border-b border-[#393328] px-6">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex gap-8">
+<a class="flex flex-col items-center justify-center border-b-2 border-primary text-primary pb-3 pt-4" href="#">
+<p class="text-sm font-bold leading-normal">All Transactions</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-[#bab09c] hover:text-white pb-3 pt-4 transition-colors" href="#">
+<p class="text-sm font-bold leading-normal flex items-center gap-2">
+                                Pending Withdrawals
+                                <span class="bg-primary text-background-dark text-[10px] px-1.5 py-0.5 rounded-full">18</span>
+</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-[#bab09c] hover:text-white pb-3 pt-4 transition-colors" href="#">
+<p class="text-sm font-bold leading-normal">System Logs</p>
+</a>
+</div>
+<div class="flex gap-2 py-3">
+<button class="flex h-9 items-center justify-center gap-2 rounded-lg bg-[#393328] px-3 text-white text-xs font-medium border border-[#544c3b]">
+<span>All Methods</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex h-9 items-center justify-center gap-2 rounded-lg bg-[#393328] px-3 text-white text-xs font-medium border border-[#544c3b]">
+<span>Min $100</span>
+<span class="material-symbols-outlined text-sm">filter_alt</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#2a2620]">
+<th class="px-6 py-4 text-xs font-bold text-[#bab09c] uppercase tracking-wider">Transaction ID</th>
+<th class="px-6 py-4 text-xs font-bold text-[#bab09c] uppercase tracking-wider">User</th>
+<th class="px-6 py-4 text-xs font-bold text-[#bab09c] uppercase tracking-wider">Method</th>
+<th class="px-6 py-4 text-xs font-bold text-[#bab09c] uppercase tracking-wider">Amount</th>
+<th class="px-6 py-4 text-xs font-bold text-[#bab09c] uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-[#bab09c] uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#393328]">
+<!-- Row 1: Crypto Pending -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-white font-mono text-sm">TX-77129045</span>
+<span class="text-[#bab09c] text-xs">Today, 02:45 PM</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">JD</div>
+<div class="flex flex-col">
+<span class="text-white text-sm font-medium">Jordan Devore</span>
+<span class="text-[#bab09c] text-xs">j.dev@example.com</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-400 text-lg">currency_bitcoin</span>
+<span class="text-white text-sm">Tron (USDT)</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-white font-bold text-sm">850.00 USDT</span>
+<span class="text-[#bab09c] text-xs">≈ $850.12 USD</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">
+<span class="size-1.5 rounded-full bg-primary"></span>
+                                    Pending Approval
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="px-3 py-1.5 bg-primary text-background-dark text-xs font-bold rounded hover:opacity-90">Approve</button>
+<button class="px-3 py-1.5 bg-[#fa3f38]/10 text-[#fa3f38] text-xs font-bold rounded hover:bg-[#fa3f38]/20 border border-[#fa3f38]/30">Reject</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Fiat Success -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-white font-mono text-sm">TX-77128012</span>
+<span class="text-[#bab09c] text-xs">Today, 11:20 AM</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-xs">AM</div>
+<div class="flex flex-col">
+<span class="text-white text-sm font-medium">Aisha Mohammed</span>
+<span class="text-[#bab09c] text-xs">aisha.m@pay.ng</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-green-400 text-lg">credit_card</span>
+<span class="text-white text-sm">Paystack (NGN)</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-white font-bold text-sm">₦125,000.00</span>
+<span class="text-[#bab09c] text-xs">≈ $78.50 USD</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0bda19]/20 text-[#0bda19]">
+<span class="size-1.5 rounded-full bg-[#0bda19]"></span>
+                                    Completed
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1.5 text-[#bab09c] hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Crypto Success -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-white font-mono text-sm">TX-77127993</span>
+<span class="text-[#bab09c] text-xs">Yesterday, 09:15 PM</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-xs">SL</div>
+<div class="flex flex-col">
+<span class="text-white text-sm font-medium">Sam Lee</span>
+<span class="text-[#bab09c] text-xs">saml@crypto.io</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-400 text-lg">currency_bitcoin</span>
+<span class="text-white text-sm">Tron (USDT)</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-white font-bold text-sm">1,200.00 USDT</span>
+<span class="text-[#bab09c] text-xs">≈ $1,200.00 USD</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0bda19]/20 text-[#0bda19]">
+<span class="size-1.5 rounded-full bg-[#0bda19]"></span>
+                                    Completed
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1.5 text-[#bab09c] hover:text-white transition-colors">
+<span class="material-symbols-outlined">open_in_new</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Suspicious/Flagged -->
+<tr class="hover:bg-white/5 transition-colors bg-[#fa3f38]/5">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-white font-mono text-sm">TX-77127501</span>
+<span class="text-[#bab09c] text-xs">Yesterday, 04:30 PM</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-red-900/40 flex items-center justify-center text-[#fa3f38] font-bold text-xs">FK</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<span class="text-white text-sm font-medium">Frank K.</span>
+<span class="material-symbols-outlined text-[#fa3f38] text-sm">warning</span>
+</div>
+<span class="text-[#bab09c] text-xs">f.kline@fake.com</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-400 text-lg">currency_bitcoin</span>
+<span class="text-white text-sm">Tron (USDT)</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-white font-bold text-sm">5,000.00 USDT</span>
+<span class="text-[#bab09c] text-xs">≈ $5,001.05 USD</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#fa3f38]/20 text-[#fa3f38]">
+<span class="size-1.5 rounded-full bg-[#fa3f38]"></span>
+                                    Flagged Review
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="px-3 py-1.5 bg-[#393328] text-white text-xs font-bold rounded hover:bg-[#4a4335] border border-[#544c3b]">Investigate</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-[#393328] flex items-center justify-between">
+<p class="text-[#bab09c] text-sm tracking-tight">Showing <span class="text-white font-bold">1-10</span> of <span class="text-white font-bold">452</span> transactions</p>
+<div class="flex gap-2">
+<button class="flex items-center justify-center h-8 w-8 rounded bg-[#393328] text-[#bab09c] hover:text-white border border-[#544c3b]">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="flex items-center justify-center h-8 w-8 rounded bg-primary text-background-dark font-bold text-xs">1</button>
+<button class="flex items-center justify-center h-8 w-8 rounded bg-[#393328] text-[#bab09c] hover:text-white border border-[#544c3b] font-bold text-xs">2</button>
+<button class="flex items-center justify-center h-8 w-8 rounded bg-[#393328] text-[#bab09c] hover:text-white border border-[#544c3b] font-bold text-xs">3</button>
+<button class="flex items-center justify-center h-8 w-8 rounded bg-[#393328] text-[#bab09c] hover:text-white border border-[#544c3b]">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- System Alerts / Bottom Widgets -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
+<!-- Payout Wallet Health -->
+<div class="lg:col-span-2 bg-[#1d1b16] rounded-xl border border-[#393328] p-6">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-white text-lg font-bold">Crypto Infrastructure Status</h3>
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-[#0bda19]"></span>
+<span class="text-[#0bda19] text-xs font-bold uppercase tracking-widest">Network Online</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 bg-[#2a2620] rounded-lg border border-[#393328]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#bab09c]">link</span>
+<div>
+<p class="text-white text-sm font-medium">Tron Node Connection</p>
+<p class="text-[#bab09c] text-xs">Latencey: 42ms | Block height: 60,492,102</p>
+</div>
+</div>
+<span class="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded">STABLE</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-[#2a2620] rounded-lg border border-[#393328]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#bab09c]">gas_meter</span>
+<div>
+<p class="text-white text-sm font-medium">Gas (TRX) Balance</p>
+<p class="text-[#bab09c] text-xs">Required for processing USDT transfers</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white text-sm font-bold">1,240.50 TRX</p>
+<p class="text-[#0bda19] text-[10px] font-bold">SUFFICIENT</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Audit Report -->
+<div class="bg-primary/5 rounded-xl border border-primary/20 p-6">
+<h3 class="text-primary text-lg font-bold mb-4">Audit Quick-Look</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center py-2 border-b border-[#393328]">
+<span class="text-[#bab09c] text-sm">Today's Volume</span>
+<span class="text-white font-bold">$12,402.00</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-[#393328]">
+<span class="text-[#bab09c] text-sm">Unresolved Flags</span>
+<span class="text-[#fa3f38] font-bold">04</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-[#393328]">
+<span class="text-[#bab09c] text-sm">Avg. Payout Time</span>
+<span class="text-white font-bold">14.2 min</span>
+</div>
+<div class="mt-6">
+<p class="text-[#bab09c] text-xs leading-relaxed italic">"All Fiat settlements are successfully bridged from Paystack. No inconsistencies detected in the last 24-hour cycle."</p>
+</div>
+<button class="w-full mt-4 py-3 bg-[#393328] hover:bg-[#4a4335] text-white text-xs font-bold rounded-lg transition-colors border border-[#544c3b]">
+                        Download Full Compliance PDF
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Overlay (Mockup for Approval) -->
+<div class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+<div class="bg-[#1d1b16] border border-[#393328] rounded-2xl max-w-md w-full p-8 text-center">
+<div class="size-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-primary text-4xl">verified_user</span>
+</div>
+<h4 class="text-white text-2xl font-bold mb-2">Authorize Payout?</h4>
+<p class="text-[#bab09c] mb-8 text-sm leading-relaxed">You are about to approve a payout of <span class="text-white font-bold">850.00 USDT</span> to user <span class="text-white font-bold">Jordan Devore</span>. This action is irreversible on the blockchain.</p>
+<div class="grid grid-cols-2 gap-4">
+<button class="h-12 bg-[#393328] text-white font-bold rounded-lg hover:bg-[#4a4335] transition-colors">Cancel</button>
+<button class="h-12 bg-primary text-background-dark font-bold rounded-lg hover:opacity-90 transition-opacity">Confirm &amp; Sign</button>
+</div>
+</div>
+</div>
+</body></html>
