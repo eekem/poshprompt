@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      const { data, error } = await authClient.forgetPassword({
+      const { data, error } = await authClient.requestPasswordReset({
         email,
         redirectTo: "/reset-password",
       });
@@ -83,22 +83,34 @@ export default function ForgotPasswordPage() {
 
                 {/* Recovery Form */}
                 <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <label className="text-white text-sm font-semibold block ml-1" htmlFor="email">
-                  Email Address
-                </label>
-                <div className="relative group">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors">
-                    alternate_email
-                  </span>
-                  <input
-                    className="w-full pl-12 pr-4 h-14 bg-surface-dark border border-border-dark text-white rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-[#bab09c]"
-                    id="email"
-                    name="email"
-                    placeholder="e.g. prompt.engineer@ai.com"
-                    required
-                    type="email"
-                    value={email}
+                  <div className="space-y-2">
+                    <label className="text-white text-sm font-semibold block ml-1" htmlFor="email">
+                      Email Address
+                    </label>
+                    <div className="relative group">
+                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors">
+                        alternate_email
+                      </span>
+                      <input
+                        className="w-full pl-12 pr-4 h-14 bg-surface-dark border border-border-dark text-white rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-[#bab09c]"
+                        id="email"
+                        name="email"
+                        placeholder="e.g. prompt.engineer@ai.com"
+                        required
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? "Sending..." : "Send Reset Link"}
+                  </button>
+                </form>
 
                 {/* Footer Navigation */}
                 <div className="mt-10 pt-8 border-t border-border-dark/50 text-center">
@@ -110,13 +122,8 @@ export default function ForgotPasswordPage() {
                     Back to Login
                   </button>
                 </div>
-              </div>
-                onClick={() => router.push('/login')}
-              >
-                <span className="material-symbols-outlined text-lg">arrow_back</span>
-                Back to Login
-              </button>
-            </div>
+              </>
+            )}
           </div>
 
           {/* Trust Badges / Social Microcopy */}
