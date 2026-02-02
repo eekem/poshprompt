@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PoshPrompt | The Premier AI Arena",
   description: "The world's first competitive arena for prompt engineers. Battle in real-time challenges, level up your rank, and claim loot.",
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

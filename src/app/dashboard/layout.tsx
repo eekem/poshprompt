@@ -17,6 +17,7 @@ export default function DashboardLayout({
     if (pathname === '/dashboard') return 'dashboard';
     if (pathname === '/dashboard/challenges' || pathname.startsWith('/dashboard/challenges/')) return 'challenges';
     if (pathname === '/dashboard/rewards') return 'rewards';
+    if (pathname === '/dashboard/buy-coins') return 'buy-coins';
     if (pathname === '/dashboard/history') return 'history';
     if (pathname === '/dashboard/profile') return 'profile';
     if (pathname === '/dashboard/notifications') return 'notifications';
@@ -29,6 +30,7 @@ export default function DashboardLayout({
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', fill: false, href: '/dashboard' },
     { id: 'challenges', label: 'Challenges', icon: 'psychology', fill: false, href: '/dashboard/challenges' },
     { id: 'rewards', label: 'Rewards', icon: 'card_giftcard', fill: false, href: '/dashboard/rewards' },
+    { id: 'buy-coins', label: 'Buy Coins', icon: 'monetization_on', fill: false, href: '/dashboard/buy-coins' },
     { id: 'history', label: 'History', icon: 'history', fill: false, href: '/dashboard/history' },
     { id: 'profile', label: 'Profile', icon: 'account_circle', fill: false, href: '/dashboard/profile' },
   ];
@@ -136,10 +138,13 @@ export default function DashboardLayout({
               ))}
             </nav>
           </div>
-          <div className="p-4 bg-[#f59e0b]/5 rounded-xl border border-[#f59e0b]/10 mb-4">
-            <p className="text-xs text-[#a8906e] uppercase font-bold tracking-tighter">Current Rank</p>
-            <p className="text-xl font-black text-white shadow-[0_0_10px_rgba(245,158,11,0.5)] italic uppercase">{currentRank}</p>
-          </div>
+          <button 
+            onClick={() => router.push('/')}
+            className="flex items-center gap-3 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl transition-all group"
+          >
+            <span className="material-symbols-outlined text-red-500 text-[24px]">logout</span>
+            <p className="text-sm font-bold text-red-500">Logout</p>
+          </button>
         </aside>
         
         {/* Mobile Sidebar - Offcanvas Drawer */}
@@ -190,6 +195,13 @@ export default function DashboardLayout({
                 ))}
               </nav>
             </div>
+            <button 
+              onClick={() => router.push('/')}
+              className="flex items-center gap-3 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl transition-all group mt-4"
+            >
+              <span className="material-symbols-outlined text-red-500 text-[24px]">logout</span>
+              <p className="text-sm font-bold text-red-500">Logout</p>
+            </button>
            
           </aside>
         </div>

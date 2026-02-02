@@ -5,11 +5,69 @@ import { useRouter } from "next/navigation";
 import TikTokLogo from "@/components/TikTok";
 import PasswordInput from "@/components/PasswordInput";
 import { useState } from "react";
+import { authClient } from "@/app/lib/auth-client";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSocialSignIn = async (provider: 'google' | 'tiktok' | 'twitter') => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const { data, error } = await authClient.signIn.social({
+        provider,
+      });
+
+      if (error) {
+        setError(error.message || `Failed to sign up with ${provider}`);
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError(`An unexpected error occurred with ${provider} sign up`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await authClient.signUp.email({
+        email,
+        password,
+        name,
+        username,
+      });
+
+      if (error) {
+        setError(error.message || "Registration failed");
+      } else {
+        router.push("/verify-email");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center p-6 bg-mesh pt-30">
@@ -31,7 +89,29 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            <form className="flex flex-col gap-5">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+              {/* Name Field */}
+              <div className="flex flex-col gap-2">
+                <label className="text-white text-sm font-medium leading-none">
+                  Full Name
+                </label>
+                <input
+                  className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#544c3b] bg-[#27231b] h-12 placeholder:text-[#bab09c]/60 px-4 text-base font-normal transition-all"
+                  placeholder="John Doe"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+
               {/* Email Field */}
               <div className="flex flex-col gap-2">
                 <label className="text-white text-sm font-medium leading-none">
@@ -41,6 +121,9 @@ export default function RegisterPage() {
                   className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#544c3b] bg-[#27231b] h-12 placeholder:text-[#bab09c]/60 px-4 text-base font-normal transition-all"
                   placeholder="email@example.com"
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
 
@@ -53,6 +136,9 @@ export default function RegisterPage() {
                   className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#544c3b] bg-[#27231b] h-12 placeholder:text-[#bab09c]/60 px-4 text-base font-normal transition-all"
                   placeholder="MasterPrompter"
                   type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
                 />
               </div>
 
@@ -77,10 +163,11 @@ export default function RegisterPage() {
 
               {/* Main Register Button */}
               <button
-                className="mt-4 flex w-full cursor-pointer items-center justify-center rounded-lg h-14 px-4 bg-primary text-background-dark text-lg font-bold transition-transform active:scale-[0.98] shadow-lg shadow-primary/20"
+                className="mt-4 flex w-full cursor-pointer items-center justify-center rounded-lg h-14 px-4 bg-primary text-background-dark text-lg font-bold transition-transform active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                 type="submit"
+                disabled={isLoading}
               >
-                Create Account
+                {isLoading ? "Creating Account..." : "Create Account"}
               </button>
 
               {/* Divider */}
@@ -95,8 +182,10 @@ export default function RegisterPage() {
               {/* Social Sign-up Section */}
               <div className="grid grid-cols-3 gap-3">
                 <button
-                  className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-[#393328] bg-[#27231b]/50 hover:bg-[#393328] transition-colors group"
+                  className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-[#393328] bg-[#27231b]/50 hover:bg-[#393328] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
+                  onClick={() => handleSocialSignIn('google')}
+                  disabled={isLoading}
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -110,8 +199,10 @@ export default function RegisterPage() {
                 </button>
 
                 <button
-                  className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-[#393328] bg-[#27231b]/50 hover:bg-[#393328] transition-colors group"
+                  className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-[#393328] bg-[#27231b]/50 hover:bg-[#393328] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
+                  onClick={() => handleSocialSignIn('tiktok')}
+                  disabled={isLoading}
                 >
                   <TikTokLogo className="w-6 h-6" />
                   <span className="text-[10px] text-[#bab09c] uppercase font-bold tracking-tighter">
@@ -120,15 +211,17 @@ export default function RegisterPage() {
                 </button>
 
                 <button
-                  className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-[#393328] bg-[#27231b]/50 hover:bg-[#393328] transition-colors group"
+                  className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-[#393328] bg-[#27231b]/50 hover:bg-[#393328] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
+                  onClick={() => handleSocialSignIn('twitter')}
+                  disabled={isLoading}
                 >
                   <svg
                     className="w-5 h-5 fill-white group-hover:fill-primary"
                     viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 6.064-6.932zm-1.161 17.52h1.833L7.084 4.126H5.117l13.311 17.403z"></path>
                   </svg>
                   <span className="text-[10px] text-[#bab09c] uppercase font-bold tracking-tighter">
                     Twitter (X)

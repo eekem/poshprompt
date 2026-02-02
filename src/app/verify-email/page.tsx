@@ -1,10 +1,49 @@
 "use client";
 
 import Layout from "@/components/Layout";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { authClient } from "@/app/lib/auth-client";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    const emailFromUrl = searchParams.get("email");
+    if (emailFromUrl) {
+      setEmail(decodeURIComponent(emailFromUrl));
+    }
+  }, [searchParams]);
+
+  const handleResendEmail = async () => {
+    if (!email) return;
+    
+    setIsResending(true);
+    setError("");
+
+    try {
+      const { data, error } = await authClient.sendVerificationEmail({
+        email,
+      });
+
+      if (error) {
+        setError(error.message || "Failed to resend verification email");
+      } else {
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsResending(false);
+    }
+  };
   return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center p-6 bg-mesh pt-30">
@@ -27,12 +66,26 @@ export default function VerifyEmailPage() {
               </p>
             </div>
 
+            {/* Success Message */}
+            {success && (
+              <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <p className="text-green-400 text-sm">Verification email resent successfully!</p>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
             {/* User Email Card */}
             <div className="mb-8">
               <div className="flex items-center justify-between gap-4 rounded-lg bg-surface-dark border border-border-dark p-5">
                 <div className="flex flex-col gap-1 items-start text-left">
                   <p className="text-gray-200 text-base font-bold leading-tight">
-                    alexander.v@creative-agency.com
+                    {email || "alexander.v@creative-agency.com"}
                   </p>
                   <p className="text-gray-400 text-sm font-normal">
                     Pending verification...
@@ -45,9 +98,13 @@ export default function VerifyEmailPage() {
             </div>
 
             {/* Action Button */}
-            <button className="w-full h-14 bg-primary hover:bg-primary/90 text-background-dark text-base font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group mb-6">
-              <span className="material-symbols-outlined">refresh</span>
-              Resend Verification Email
+            <button 
+              className="w-full h-14 bg-primary hover:bg-primary/90 text-background-dark text-base font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleResendEmail}
+              disabled={isResending || !email}
+            >
+              <span className="material-symbols-outlined">{isResending ? "refresh" : "refresh"}</span>
+              {isResending ? "Sending..." : "Resend Verification Email"}
             </button>
 
             {/* Footer Links */}

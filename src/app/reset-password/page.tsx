@@ -1,14 +1,60 @@
 "use client";
 
 import Layout from "@/components/Layout";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import PasswordInput from "@/components/PasswordInput";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { authClient } from "@/app/lib/auth-client";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [newPassword, setNewPassword] = useState("PoshAI_2024!");
+  const searchParams = useSearchParams();
+  const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const tokenFromUrl = searchParams.get("token");
+    if (tokenFromUrl) {
+      setToken(tokenFromUrl);
+    }
+  }, [searchParams]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (!token) {
+      setError("Invalid reset token");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await authClient.resetPassword({
+        newPassword,
+        token,
+      });
+
+      if (error) {
+        setError(error.message || "Failed to reset password");
+      } else {
+        router.push("/login?message=Password reset successful");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center p-6 bg-mesh pt-30">
@@ -31,7 +77,23 @@ export default function ResetPasswordPage() {
             </div>
 
             {/* Form Section */}
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            {/* Token Warning */}
+            {!token && (
+              <div className="mb-6 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                <p className="text-yellow-400 text-sm">
+                  Invalid or missing reset token. Please check your email and use the reset link provided.
+                </p>
+              </div>
+            )}
+
+            <form className="space-y-6" onSubmit={handleSubmit}>
               {/* New Password Field */}
               <PasswordInput
                 id="new-password"
@@ -73,8 +135,8 @@ export default function ResetPasswordPage() {
 
               {/* Primary Action */}
               <div className="pt-2">
-                <button className="w-full h-14 bg-primary hover:bg-primary/90 text-background-dark text-base font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group" type="submit">
-                  <span>Update Password</span>
+                <button className="w-full h-14 bg-primary hover:bg-primary/90 text-background-dark text-base font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed" type="submit" disabled={isLoading || !token}>
+                  <span>{isLoading ? "Updating Password..." : "Update Password"}</span>
                   <span className="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">
                     arrow_forward
                   </span>

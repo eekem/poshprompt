@@ -2,32 +2,87 @@
 
 import Layout from "@/components/Layout";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { authClient } from "@/app/lib/auth-client";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const { data, error } = await authClient.forgetPassword({
+        email,
+        redirectTo: "/reset-password",
+      });
+
+      if (error) {
+        setError(error.message || "Failed to send reset email");
+      } else {
+        setSuccess(true);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center p-6 bg-mesh pt-30">
         <div className="w-full max-w-[480px] space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           {/* Recovery Card */}
           <div className="bg-surface-dark/40 backdrop-blur-xl border border-border-dark p-8 md:p-12 rounded-xl shadow-2xl">
-            {/* Icon Header */}
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-                <span className="material-symbols-outlined text-primary text-3xl">
-                  lock_reset
-                </span>
+            {/* Success Message */}
+            {success && (
+              <div className="mb-8 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
+                <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="material-symbols-outlined text-green-400 text-2xl">
+                    check_circle
+                  </span>
+                </div>
+                <h3 className="text-green-400 text-lg font-semibold mb-2">
+                  Reset Link Sent!
+                </h3>
+                <p className="text-green-300/80 text-sm">
+                  We've sent a password reset link to your email address.
+                </p>
               </div>
-              <h1 className="text-gray-200 text-3xl font-bold text-center tracking-tight">
-                Lost your way?
-              </h1>
-              <p className="text-gray-400 text-base font-normal text-center mt-3">
-                Enter the email address associated with your PoshPrompt account. We'll send you a secure link to reset your password.
-              </p>
-            </div>
+            )}
 
-            {/* Recovery Form */}
-            <form className="space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-8 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            {!success && (
+              <>
+                {/* Icon Header */}
+                <div className="flex flex-col items-center mb-8">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                    <span className="material-symbols-outlined text-primary text-3xl">
+                      lock_reset
+                    </span>
+                  </div>
+                  <h1 className="text-gray-200 text-3xl font-bold text-center tracking-tight">
+                    Lost your way?
+                  </h1>
+                  <p className="text-gray-400 text-base font-normal text-center mt-3">
+                    Enter the email address associated with your PoshPrompt account. We'll send you a secure link to reset your password.
+                  </p>
+                </div>
+
+                {/* Recovery Form */}
+                <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <label className="text-white text-sm font-semibold block ml-1" htmlFor="email">
                   Email Address
@@ -43,26 +98,19 @@ export default function ForgotPasswordPage() {
                     placeholder="e.g. prompt.engineer@ai.com"
                     required
                     type="email"
-                  />
+                    value={email}
+
+                {/* Footer Navigation */}
+                <div className="mt-10 pt-8 border-t border-border-dark/50 text-center">
+                  <button
+                    className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group"
+                    onClick={() => router.push('/login')}
+                  >
+                    <span className="material-symbols-outlined text-lg">arrow_back</span>
+                    Back to Login
+                  </button>
                 </div>
               </div>
-              <div className="pt-2">
-                <button
-                  className="w-full h-14 bg-primary hover:bg-primary/90 text-background-dark text-base font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group"
-                  type="submit"
-                >
-                  <span>Send Reset Link</span>
-                  <span className="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">
-                    send
-                  </span>
-                </button>
-              </div>
-            </form>
-
-            {/* Footer Navigation */}
-            <div className="mt-10 pt-8 border-t border-border-dark/50 text-center">
-              <button
-                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group"
                 onClick={() => router.push('/login')}
               >
                 <span className="material-symbols-outlined text-lg">arrow_back</span>
