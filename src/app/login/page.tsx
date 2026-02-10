@@ -4,16 +4,41 @@ import Layout from "@/components/Layout";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import TikTokLogo from "@/components/TikTok";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { authClient } from "@/app/lib/auth-client";
+import { useAuth } from "@/app/lib/use-auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirect authenticated users to challenge page
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/challenge");
+    }
+  }, [user, authLoading, router]);
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-mesh">
+          <div className="text-white">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Don't render if user is already authenticated
+  if (user) {
+    return null;
+  }
 
   const handleSocialSignIn = async (provider: 'google' | 'tiktok' | 'twitter') => {
     setIsLoading(true);
@@ -27,7 +52,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message || `Failed to sign in with ${provider}`);
       } else {
-        router.push("/dashboard");
+        router.push("/challenge");
       }
     } catch (err) {
       setError(`An unexpected error occurred with ${provider} sign in`);
@@ -50,7 +75,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message || "Invalid email or password");
       } else {
-        router.push("/dashboard");
+        router.push("/challenge");
       }
     } catch (err) {
       setError("An unexpected error occurred");

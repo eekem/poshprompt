@@ -19,9 +19,12 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@huggingface/inference": "^4.13.11",
+    "@paystack/inline-js": "^2.22.7",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "better-auth": "^1.4.18",
+    "dotenv": "^17.2.4",
     "next": "16.1.6",
     "pg": "^8.18.0",
     "prisma": "^7.3.0",
@@ -37,6 +40,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

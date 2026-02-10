@@ -4,11 +4,13 @@ import Layout from "@/components/Layout";
 import { useRouter } from "next/navigation";
 import TikTokLogo from "@/components/TikTok";
 import PasswordInput from "@/components/PasswordInput";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { authClient } from "@/app/lib/auth-client";
+import { useAuth } from "@/app/lib/use-auth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -16,6 +18,29 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirect authenticated users to challenge page
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/challenge");
+    }
+  }, [user, authLoading, router]);
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-mesh">
+          <div className="text-white">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Don't render if user is already authenticated
+  if (user) {
+    return null;
+  }
 
   const handleSocialSignIn = async (provider: 'google' | 'tiktok' | 'twitter') => {
     setIsLoading(true);
@@ -29,7 +54,7 @@ export default function RegisterPage() {
       if (error) {
         setError(error.message || `Failed to sign up with ${provider}`);
       } else {
-        router.push("/dashboard");
+        router.push("/challenge");
       }
     } catch (err) {
       setError(`An unexpected error occurred with ${provider} sign up`);

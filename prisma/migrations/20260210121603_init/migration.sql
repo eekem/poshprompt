@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "user" ADD COLUMN     "prompts" INTEGER NOT NULL DEFAULT 100;

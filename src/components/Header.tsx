@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/app/lib/use-auth";
 
 export default function Header() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
@@ -20,43 +22,62 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
   
-  return (
+  return ( 
     <>
-      <nav className="fixed top-0 w-full z-40 glass-nav border-b border-border-dark">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="text-primary">
-              <img src="/logo.svg" alt="PoshPrompt" className="w-[180px]" />
-            </div>
-          </div>
-          
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6 lg:gap-10">
-            <button className="text-xs sm:text-sm font-medium hover:text-primary transition-colors tracking-wide" onClick={() => router.push('/arena')}>Arena</button>
-            <button className="text-xs sm:text-sm font-medium hover:text-primary transition-colors tracking-wide" onClick={() => router.push('/leaderboard')}>Leaderboard</button>
-            <button className="text-xs sm:text-sm font-medium hover:text-primary transition-colors tracking-wide" onClick={() => router.push('/features')}>Features</button>
-            <button className="text-xs sm:text-sm font-medium hover:text-primary transition-colors tracking-wide" onClick={() => router.push('/pricing')}>Pricing</button>
-          </div>
-          
-          {/* Desktop Buttons */}
-          <div className="hidden sm:flex items-center gap-3 lg:gap-4">
-            <button className="px-4 lg:px-5 py-2 text-sm font-bold hover:text-primary transition-colors cursor-pointer" onClick={() => router.push('/login')}>Login</button>
-            <button className="bg-primary hover:bg-primary-accent text-black px-4 lg:px-6 py-2 lg:py-2.5 rounded-lg text-sm font-black tracking-wide transition-all shadow-lg shadow-primary/20 cursor-pointer" onClick={() => router.push('/register')}>
-              Join the Arena
-            </button>
-          </div>
-          
-          {/* Mobile Menu Button */}
+      <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark bg-background-dark/80 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 lg:px-10">
+        <div className="flex items-center gap-2 sm:gap-3 text-white">
           <button 
-            className="md:hidden flex flex-col gap-1 p-2 hover:text-primary transition-colors"
-            onClick={() => setIsDrawerOpen(true)}
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 sm:gap-3 text-white hover:text-primary transition-colors"
           >
-            <span className="block w-6 h-0.5 bg-current"></span>
-            <span className="block w-6 h-0.5 bg-current"></span>
-            <span className="block w-6 h-0.5 bg-current"></span>
+            <div className="flex items-center justify-center size-6 sm:size-8 rounded bg-primary/20 text-primary">
+              <span className="material-symbols-outlined text-sm sm:text-xl">terminal</span>
+            </div>
+            <h2 className="text-white text-sm sm:text-lg font-bold leading-tight tracking-tight">PoshPrompt</h2>
           </button>
         </div>
-      </nav>
+        <nav className="hidden md:flex flex-1 justify-center gap-4 sm:gap-6 lg:gap-8">
+          <button className="text-slate-400 hover:text-primary transition-colors text-xs sm:text-sm font-medium" onClick={() => {
+            if (window.location.pathname === '/') {
+              document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              router.push('/#demo');
+            }
+          }}>Demo</button>
+          <button className="text-slate-400 hover:text-primary transition-colors text-xs sm:text-sm font-medium" onClick={() => {
+            if (window.location.pathname === '/') {
+              document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              router.push('/#features');
+            }
+          }}>Features</button>
+          <button className="text-slate-400 hover:text-primary transition-colors text-xs sm:text-sm font-medium" onClick={() => {
+            if (window.location.pathname === '/') {
+              document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              router.push('/#pricing');
+            }
+          }}>Pricing</button>
+        </nav>
+        <div className="hidden md:flex items-center gap-2 sm:gap-4">
+          {!user && (
+            <button className="hidden sm:block text-slate-300 hover:text-white text-xs sm:text-sm font-medium" onClick={() => router.push('/login')}>Sign In</button>
+          )}
+          <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 sm:h-9 px-3 sm:px-4 bg-primary hover:bg-amber-400 transition-colors text-[#231c10] text-xs sm:text-sm font-bold leading-normal tracking-wide shadow-[0_0_15px_rgba(245,159,10,0.3)]" onClick={() => user ? router.push('/challenge') : router.push('/login')}>
+            <span className="truncate">{user ? 'Dashboard' : 'Get Started'}</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Menu Button */}
+      <button 
+        className="md:hidden fixed top-4 right-4 z-50 p-2 text-white hover:text-primary transition-colors"
+        onClick={() => setIsDrawerOpen(true)}
+      >
+        <span className="block w-6 h-0.5 bg-current mb-1"></span>
+        <span className="block w-6 h-0.5 bg-current mb-1"></span>
+        <span className="block w-6 h-0.5 bg-current"></span>
+      </button>
 
       {/* Offcanvas Drawer */}
       <div className={`fixed inset-0 z-50 ${isDrawerOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
@@ -72,9 +93,15 @@ export default function Header() {
             {/* Drawer Header */}
             <div className="flex items-center justify-between p-4 border-b border-border-dark bg-panel-dark/50">
               <div className="flex items-center gap-2">
-                <div className="text-primary">
-                  <img src="/logo.svg" alt="PoshPrompt" className="w-10 h-10" />
-                </div>
+                <button 
+                  onClick={() => { router.push('/'); setIsDrawerOpen(false); }}
+                  className="flex items-center gap-2 text-white hover:text-primary transition-colors"
+                >
+                  <div className="flex items-center justify-center size-8 rounded bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-xl">terminal</span>
+                  </div>
+                  <h2 className="text-white text-lg font-bold leading-tight tracking-tight">PoshPrompt</h2>
+                </button>
               </div>
               <button 
                 className="p-2 hover:bg-white/10 rounded-lg transition-all hover:text-primary"
@@ -91,39 +118,42 @@ export default function Header() {
               <div className="space-y-2">
                 <button 
                   className="block w-full text-left py-3 px-4 text-sm font-medium hover:bg-white/5 hover:text-primary rounded-lg transition-all transform hover:translate-x-1"
-                  onClick={() => { router.push('/arena'); setIsDrawerOpen(false); }}
+                  onClick={() => {
+                    if (window.location.pathname === '/') {
+                      document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      router.push('/#demo');
+                    }
+                    setIsDrawerOpen(false);
+                  }}
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary">sports_esports</span>
-                    Arena
-                  </span>
+                  Demo
                 </button>
                 <button 
                   className="block w-full text-left py-3 px-4 text-sm font-medium hover:bg-white/5 hover:text-primary rounded-lg transition-all transform hover:translate-x-1"
-                  onClick={() => { router.push('/leaderboard'); setIsDrawerOpen(false); }}
+                  onClick={() => {
+                    if (window.location.pathname === '/') {
+                      document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      router.push('/#features');
+                    }
+                    setIsDrawerOpen(false);
+                  }}
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary">leaderboard</span>
-                    Leaderboard
-                  </span>
+                  Features
                 </button>
                 <button 
                   className="block w-full text-left py-3 px-4 text-sm font-medium hover:bg-white/5 hover:text-primary rounded-lg transition-all transform hover:translate-x-1"
-                  onClick={() => { router.push('/features'); setIsDrawerOpen(false); }}
+                  onClick={() => {
+                    if (window.location.pathname === '/') {
+                      document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      router.push('/#pricing');
+                    }
+                    setIsDrawerOpen(false);
+                  }}
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary">stars</span>
-                    Features
-                  </span>
-                </button>
-                <button 
-                  className="block w-full text-left py-3 px-4 text-sm font-medium hover:bg-white/5 hover:text-primary rounded-lg transition-all transform hover:translate-x-1"
-                  onClick={() => { router.push('/pricing'); setIsDrawerOpen(false); }}
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary">payments</span>
-                    Pricing
-                  </span>
+                  Pricing
                 </button>
               </div>
             </div>
@@ -131,18 +161,29 @@ export default function Header() {
             {/* Mobile Auth Buttons */}
             <div className="p-4 border-t border-border-dark bg-panel-dark/30">
               <div className="space-y-3">
-                <button 
-                  className="w-full py-3 px-4 border border-border-dark font-bold text-sm hover:bg-white/5 transition-all rounded-lg transform hover:scale-105 hover:translate-x-1"
-                  onClick={() => { router.push('/login'); setIsDrawerOpen(false); }}
-                >
-                  Login
-                </button>
-                <button 
-                  className="w-full py-3 px-4 bg-primary hover:bg-primary-accent text-black font-black text-sm tracking-wide transition-all shadow-lg shadow-primary/20 rounded-lg transform hover:scale-105 hover:translate-x-1 hover:shadow-primary/30"
-                  onClick={() => { router.push('/register'); setIsDrawerOpen(false); }}
-                >
-                  Join the Arena
-                </button>
+                {user ? (
+                  <button 
+                    className="w-full py-3 px-4 bg-primary hover:bg-amber-400 text-[#231c10] font-bold text-sm tracking-wide transition-all shadow-lg shadow-primary/20 rounded-lg"
+                    onClick={() => { router.push('/challenges'); setIsDrawerOpen(false); }}
+                  >
+                    Go to Dashboard
+                  </button>
+                ) : (
+                  <>
+                    <button 
+                      className="w-full py-3 px-4 text-slate-300 hover:text-white text-sm font-medium transition-all rounded-lg"
+                      onClick={() => { router.push('/login'); setIsDrawerOpen(false); }}
+                    >
+                      Sign In
+                    </button>
+                    <button 
+                      className="w-full py-3 px-4 bg-primary hover:bg-amber-400 text-[#231c10] font-bold text-sm tracking-wide transition-all shadow-lg shadow-primary/20 rounded-lg"
+                      onClick={() => { router.push('/register'); setIsDrawerOpen(false); }}
+                    >
+                      Get Started
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

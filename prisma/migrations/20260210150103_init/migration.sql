@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "challenge" ADD COLUMN     "maxXpPerTurn" INTEGER NOT NULL DEFAULT 100,
+ADD COLUMN     "minScore" INTEGER NOT NULL DEFAULT 0;

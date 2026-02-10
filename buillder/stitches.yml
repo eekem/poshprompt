@@ -1,0 +1,183 @@
+app:
+  name: PoshPrompt
+  type: web_app
+  ui_style:
+    tone: minimal
+    theme: premium
+    layout: chat_first
+    inspiration:
+      - ChatGPT
+      - Linear
+    design_tokens:
+      colors:
+        primary: "#f59e0b"
+        primary_accent: "#fbbf24"
+        background_light: "#f7f6f8"
+        background_dark: "#0a0908"
+        panel_dark: "#1a1612"
+        border_dark: "#2d2419"
+      fonts:
+        display: '"Space Grotesk", sans-serif'
+
+  app_info:
+    description: >
+      PoshPrompt is a chat-first AI prompt challenge platform where users compete 
+      by crafting prompts for image, text, and other AI tasks. Each challenge focuses 
+      on creativity, clarity, and effectiveness of prompts. Players earn XP and coins, 
+      improve their prompt engineering skills, and engage in fun, turn-based or single-shot challenges.
+    target_audience:
+      - AI enthusiasts
+      - Prompt engineers
+      - Students and creatives
+    key_features:
+      - Chat-based challenges
+      - Word-count limited prompts
+      - Multi-type game formats: image, text, transformation, refinement, evaluation
+      - Turn-based iterative refinement for skill growth
+      - Rewards and scoring feedback
+
+pages:
+  - id: landing
+    name: Landing Page
+    route: /
+    layout: vertical
+    components:
+      - type: hero
+        headline: "Compete. Craft. Win with Prompts."
+        subheadline: "A chat-first arena for prompt challenges"
+        primary_cta:
+          label: "Enter Arena"
+          action: navigate:/arena
+      - type: feature_list
+        items:
+          - title: "Chat-based challenges"
+            description: "Each challenge is a conversation"
+          - title: "Minimal UI"
+            description: "No dashboards or clutter"
+          - title: "Compete and win rewards"
+            description: "Score prompts and earn prizes"
+      - type: footer
+        items:
+          - links: [terms, privacy, twitter, discord]
+
+  - id: arena
+    name: Arena Page
+    route: /arena
+    layout: horizontal
+    components:
+      - type: sidebar
+        width: 280
+        position: left
+        title: "Challenges"
+        scrollable: true
+        items_source: challenges
+        item_layout:
+          fields:
+            - title
+            - game_type
+            - difficulty
+            - status
+            - reward
+        interaction:
+          on_click: load_chat
+          update_url: true
+        style:
+          background_color: background_light
+          border_color: border_dark
+
+      - type: chat_panel
+        layout: vertical
+        header:
+          components:
+            - type: text
+              content: challenge_title
+              style:
+                font_family: display
+            - type: badge
+              content: challenge_difficulty
+            - type: badge
+              content: challenge_game_type
+            - type: timer
+              visibility: optional
+        messages:
+          message_types:
+            - system
+            - user
+            - ai
+            - scoring_feedback
+        input_area:
+          components:
+            - type: text_input
+              placeholder: "Write your prompt..."
+              multiline: true
+              max_word_count: 40
+            - type: button
+              label: "Submit"
+              state_rules:
+                enabled: challenge_live
+                disabled: challenge_ended
+          style:
+            background_color: background_light
+
+        empty_state:
+          text: "Select a challenge to begin"
+
+modals:
+  - id: challenge_results
+    trigger: challenge_end
+    content:
+      - score_summary
+      - ranking_optional
+      - reward_earned
+
+  - id: profile
+    content:
+      - user_info
+      - stats_summary
+
+  - id: wallet
+    content:
+      - rewards_balance
+      - withdrawal_actions
+
+  - id: settings
+    content:
+      - preferences
+      - logout
+
+challenge_cards:
+  examples:
+    - id: img-001
+      title: "Warm Fintech Portrait"
+      game_type: image
+      difficulty: beginner
+      description: "Generate a professional portrait that meets constraints"
+      prompt_word_limit: 40
+
+    - id: text-001
+      title: "Tweet Storm Generator"
+      game_type: text
+      difficulty: beginner
+      description: "Turn a paragraph into a short, engaging Twitter thread"
+      prompt_word_limit: 30
+
+    - id: transform-001
+      title: "Text to JSON Schema"
+      game_type: transformation
+      difficulty: intermediate
+      description: "Convert plain text instructions into structured JSON"
+      prompt_word_limit: 35
+
+    - id: refine-001
+      title: "Iterative Refinement Challenge"
+      game_type: refinement
+      difficulty: intermediate
+      description: "Improve a generated response across multiple turns"
+      prompt_word_limit: 25
+
+    - id: eval-001
+      title: "Output Evaluation Challenge"
+      game_type: evaluation
+      difficulty: advanced
+      description: "Rank and explain multiple AI outputs for quality"
+      prompt_word_limit: 30

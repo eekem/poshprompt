@@ -27,8 +27,13 @@ model User {
   banExpires      DateTime?
   username        String?
   displayUsername String?
+  prompts         Int       @default(100)  // User's prompt count
+  earnedXps       Int       @default(0)     // Total XP earned from challenges
+  earnedBalance   Float     @default(0.0)   // User's earned balance from challenges
   sessions        Session[]
   accounts        Account[]
+  chats           Chat[]
+  payments        Payment[]
 
   @@unique([email])
   @@unique([username])
@@ -92,4 +97,99 @@ model Jwks {
   expiresAt  DateTime?
 
   @@map("jwks")
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  gameType    String   // 'image' | 'text' | 'transformation' | 'refinement' | 'evaluation'
+  difficulty  String   // 'beginner' | 'intermediate' | 'advanced'
+  modelType   String   // 'image_generation' | 'text_generation'
+  modelName   String
+  task        Json     // Contains objective and constraints
+  gameplay    Json     // Contains turnBased, maxTurns, timeLimitSeconds, scoringMode
+  scoring     Json     // Contains totalScore and breakdown
+  rewards     Json     // Contains xp and coins
+  minScore    Int      @default(0)     // Minimum score required to earn XP
+  maxXpPerTurn Int    @default(100)  // Maximum XP that can be earned per turn
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  chats Chat[]
+  
+  @@map("challenge")
+}
+
+model Chat {
+  id          String   @id @default(cuid())
+  userId      String
+  challengeId String
+  isActive    Boolean  @default(true)  // Whether this chat session is still active
+  currentTurn Int     @default(1)     // Current turn number for turn-based challenges
+  totalScore  Int      @default(0)    // Total score accumulated across all messages
+  earnedXp    Int      @default(0)    // Total XP earned from this chat session
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  messages Message[]
+  
+  @@index([userId])
+  @@index([challengeId])
+  @@map("chat")
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  chatId      String
+  type        String   // 'system' | 'user' | 'ai'
+  content     String
+  prompt      String?  // Only for user messages
+  output      String?  // Only for AI messages
+  score       Int?     // Only for AI messages
+  breakdown   Json?    // Only for AI messages - score breakdown
+  turnNumber  Int
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  
+  @@index([chatId])
+  @@index([type])
+  @@map("message")
+}
+
+model ChallengePrizes {
+  id        String   @id @default(cuid())
+  amount    Float    // Prize amount in dollars
+  position  Int      // Position/rank for this prize
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("challenge_prizes")
+}
+
+model Payment {
+  id               String   @id @default(cuid())
+  userId           String
+  amount           Float
+  currency         String
+  status           String   // 'pending', 'success', 'failed'
+  reference        String   @unique
+  paystackReference String?
+  metadata         Json?
+  promptsPurchased Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([reference])
+  @@map("payment")
 }

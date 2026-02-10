@@ -1,0 +1,274 @@
+# =============================
+# PoshPrompt Challenge Schema
+# =============================
+challenge_schema:
+  id: string                      # Unique identifier
+  title: string                   # Challenge name
+  description: string             # Short explanation
+  game_type:
+    enum:
+      - image
+      - text
+      - transformation
+      - refinement
+      - evaluation
+  difficulty:
+    enum:
+      - beginner
+      - intermediate
+      - advanced
+
+  prompt_rules:
+    max_word_count: integer
+    min_word_count: integer
+    allowed_languages:
+      - string
+    forbidden_terms:
+      - string
+
+  model_context:
+    model_type:
+      - image_generation
+      - text_generation
+    temperature: float
+    max_tokens: integer
+
+  task:
+    objective: string
+    constraints:
+      required:
+        - string
+      forbidden:
+        - string
+      optional:
+        - string
+
+  gameplay:
+    turn_based: boolean
+    max_turns: integer
+    time_limit_seconds: integer
+    scoring_mode:
+      enum:
+        - constraint_based
+        - quality_score
+        - refinement_score
+        - ranking
+
+  scoring:
+    total_score: integer
+    breakdown:
+      constraint_accuracy: integer
+      clarity: integer
+      creativity: integer
+      brevity: integer
+
+  feedback:
+    inline: boolean
+    detailed_modal: boolean
+
+  rewards:
+    xp: integer
+    coins: integer
+    bonus_conditions:
+      - condition: string
+        bonus_xp: integer
+
+  visibility:
+    status:
+      - upcoming
+      - live
+      - ended
+      - archived
+    is_featured: boolean
+
+# =============================
+# Example Challenges for Each Game Type
+# =============================
+examples:
+  - id: img-001
+    title: "Warm Fintech Portrait"
+    game_type: image
+    difficulty: beginner
+    description: "Generate a professional portrait that meets constraints"
+    prompt_rules:
+      max_word_count: 40
+    task:
+      objective: "Create a portrait using a prompt"
+      constraints:
+        required:
+          - "African founder"
+          - "studio lighting"
+          - "warm amber tones"
+        forbidden:
+          - "logos"
+          - "text"
+        optional:
+          - "laptop in frame"
+    gameplay:
+      turn_based: false
+      scoring_mode: constraint_based
+      time_limit_seconds: 180
+    scoring:
+      total_score: 100
+      breakdown:
+        constraint_accuracy: 50
+        clarity: 20
+        creativity: 20
+        brevity: 10
+    feedback:
+      inline: true
+      detailed_modal: true
+    rewards:
+      xp: 40
+      coins: 5
+    visibility:
+      status: live
+      is_featured: true
+
+  - id: text-001
+    title: "Tweet Storm Generator"
+    game_type: text
+    difficulty: beginner
+    description: "Turn a paragraph into a short, engaging Twitter thread"
+    prompt_rules:
+      max_word_count: 30
+    task:
+      objective: "Generate a 5-tweet thread from a paragraph"
+      constraints:
+        required:
+          - "all main points covered"
+        forbidden:
+          - "grammar errors"
+        optional:
+          - "humor or emojis"
+    gameplay:
+      turn_based: false
+      scoring_mode: quality_score
+      time_limit_seconds: 120
+    scoring:
+      total_score: 100
+      breakdown:
+        constraint_accuracy: 40
+        clarity: 30
+        creativity: 20
+        brevity: 10
+    feedback:
+      inline: true
+      detailed_modal: true
+    rewards:
+      xp: 30
+      coins: 5
+    visibility:
+      status: live
+      is_featured: true
+
+  - id: transform-001
+    title: "Text to JSON Schema"
+    game_type: transformation
+    difficulty: intermediate
+    description: "Convert plain text instructions into structured JSON"
+    prompt_rules:
+      max_word_count: 35
+    task:
+      objective: "Generate a JSON schema from plain instructions"
+      constraints:
+        required:
+          - "all fields included"
+        forbidden:
+          - "syntax errors"
+        optional:
+          - "additional helpful metadata"
+    gameplay:
+      turn_based: false
+      scoring_mode: constraint_based
+      time_limit_seconds: 180
+    scoring:
+      total_score: 100
+      breakdown:
+        constraint_accuracy: 60
+        clarity: 20
+        creativity: 10
+        brevity: 10
+    feedback:
+      inline: true
+      detailed_modal: true
+    rewards:
+      xp: 35
+      coins: 7
+    visibility:
+      status: live
+      is_featured: true
+
+  - id: refine-001
+    title: "Iterative Refinement Challenge"
+    game_type: refinement
+    difficulty: intermediate
+    description: "Improve a generated response across multiple turns"
+    prompt_rules:
+      max_word_count: 25
+    task:
+      objective: "Refine a generated response for clarity and style"
+      constraints:
+        required:
+          - "improve clarity"
+          - "reduce unnecessary text"
+        forbidden:
+          - "introduce hallucinations"
+        optional:
+          - "enhance tone/style"
+    gameplay:
+      turn_based: true
+      max_turns: 3
+      scoring_mode: refinement_score
+      time_limit_seconds: 300
+    scoring:
+      total_score: 100
+      breakdown:
+        improvement_per_turn: 70
+        brevity: 30
+    feedback:
+      inline: true
+      detailed_modal: true
+    rewards:
+      xp: 50
+      coins: 10
+    visibility:
+      status: live
+      is_featured: false
+
+  - id: eval-001
+    title: "Output Evaluation Challenge"
+    game_type: evaluation
+    difficulty: advanced
+    description: "Rank and explain multiple AI outputs for quality"
+    prompt_rules:
+      max_word_count: 30
+    task:
+      objective: "Score 5 AI outputs for correctness, style, and completeness"
+      constraints:
+        required:
+          - "identify errors or hallucinations"
+          - "rank outputs from best to worst"
+        forbidden:
+          - "ignore outputs"
+        optional:
+          - "suggest improvements"
+    gameplay:
+      turn_based: false
+      scoring_mode: ranking
+      time_limit_seconds: 180
+    scoring:
+      total_score: 100
+      breakdown:
+        correctness: 50
+        explanation_quality: 30
+        creativity: 20
+    feedback:
+      inline: true
+      detailed_modal: true
+    rewards:
+      xp: 60
+      coins: 15
+    visibility:
+      status: live
+      is_featured: true
