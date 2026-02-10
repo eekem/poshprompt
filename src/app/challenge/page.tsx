@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/app/lib/use-auth';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import Modal from '@/components/Modal';
@@ -21,7 +21,7 @@ interface Challenge {
   };
 }
 
-export default function ChallengeListPage() {
+function ChallengeListContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -387,5 +387,17 @@ export default function ChallengeListPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ChallengeListPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-background-dark">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <ChallengeListContent />
+    </Suspense>
   );
 }
