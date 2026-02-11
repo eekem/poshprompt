@@ -7,6 +7,8 @@ export interface Package {
   popular?: boolean
   description?: string
   pricePerPrompt: number
+  billing?: string
+  features?: string[]
 }
 
 export const PACKAGES: Package[] = [
@@ -17,7 +19,9 @@ export const PACKAGES: Package[] = [
     price: 3.00, 
     currency: 'USD',
     description: 'Perfect for getting started',
-    pricePerPrompt: 0.15
+    pricePerPrompt: 0.15,
+    billing: 'month',
+    features: ['20 AI prompts', 'Basic challenges', 'Community access']
   },
   { 
     id: 'pro', 
@@ -27,7 +31,9 @@ export const PACKAGES: Package[] = [
     currency: 'USD', 
     popular: true,
     description: 'Most popular choice',
-    pricePerPrompt: 0.125
+    pricePerPrompt: 0.125,
+    billing: 'month',
+    features: ['40 AI prompts', 'Advanced challenges', 'Priority support', 'Analytics dashboard']
   },
   { 
     id: 'master', 
@@ -36,7 +42,9 @@ export const PACKAGES: Package[] = [
     price: 10.00, 
     currency: 'USD',
     description: 'Great for regular users',
-    pricePerPrompt: 0.111
+    pricePerPrompt: 0.111,
+    billing: 'month',
+    features: ['90 AI prompts', 'All challenges', 'Priority support', 'Advanced analytics', 'Custom themes']
   },
   { 
     id: 'ultimate', 
@@ -45,6 +53,8 @@ export const PACKAGES: Package[] = [
     price: 20.00, 
     currency: 'USD',
     description: 'Best value for power users',
-    pricePerPrompt: 0.10
+    pricePerPrompt: 0.10,
+    billing: 'month',
+    features: ['200 AI prompts', 'Unlimited challenges', '24/7 support', 'Full analytics', 'Custom themes', 'API access']
   },
 ]

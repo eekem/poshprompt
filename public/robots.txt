@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+# Host
+Host: https://poshprompt.com
+
+# Sitemaps
+Sitemap: https://poshprompt.com/sitemap.xml

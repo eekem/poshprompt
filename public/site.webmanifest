@@ -1,0 +1,22 @@
+{
+  "name": "PoshPrompt - The Premier AI Arena",
+  "short_name": "PoshPrompt",
+  "description": "The world's first competitive arena for prompt engineers. Battle in real-time challenges, level up your rank, and claim loot.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

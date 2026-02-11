@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import TikTokLogo from "@/components/TikTok";
 import { useState, useEffect } from "react";
-import { authClient } from "@/app/lib/auth-client";
 import { useAuth } from "@/app/lib/use-auth";
+import { collectFingerprint } from "@/app/lib/fingerprint";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +16,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fingerprintData, setFingerprintData] = useState<any>(null);
+
+  // Collect fingerprint data on component mount
+  useEffect(() => {
+    const collectData = async () => {
+      try {
+        const data = collectFingerprint();
+        setFingerprintData(data);
+      } catch (error) {
+        console.error('Failed to collect fingerprint:', error);
+      }
+    };
+    collectData();
+  }, []);
 
   // Redirect authenticated users to challenge page
   useEffect(() => {
@@ -40,20 +54,22 @@ export default function LoginPage() {
     return null;
   }
 
-  const handleSocialSignIn = async (provider: 'google' | 'tiktok' | 'twitter') => {
+  const handleSocialSignIn = async (provider: 'google' | 'twitter') => {
     setIsLoading(true);
     setError("");
 
     try {
-      const { data, error } = await authClient.signIn.social({
-        provider,
-      });
-
-      if (error) {
-        setError(error.message || `Failed to sign in with ${provider}`);
-      } else {
-        router.push("/challenge");
+      // Collect fingerprint data before redirecting
+      if (!fingerprintData) {
+        setError("Browser fingerprint not available. Please refresh the page and try again.");
+        return;
       }
+
+      // Encode fingerprint data for URL
+      const encodedFingerprintData = encodeURIComponent(JSON.stringify(fingerprintData));
+      
+      // Redirect to our custom social auth route with fingerprint data
+      window.location.href = `/api/auth/social/${provider}?fingerprintData=${encodedFingerprintData}`;
     } catch (err) {
       setError(`An unexpected error occurred with ${provider} sign in`);
     } finally {
@@ -67,13 +83,26 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const { data, error } = await authClient.signIn.email({
-        email,
-        password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          fingerprintData,
+        }),
       });
 
-      if (error) {
-        setError(error.message || "Invalid email or password");
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.error?.includes("verify your email") || data.error?.includes("email verification")) {
+          setError("Please verify your email before logging in. Check your inbox for the verification link.");
+        } else {
+          setError(data.error || "Invalid email or password");
+        }
       } else {
         router.push("/challenge");
       }
@@ -198,7 +227,7 @@ export default function LoginPage() {
             </div>
 
             {/* Social Login Options */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {/* Google */}
               <button 
                 className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
@@ -214,19 +243,6 @@ export default function LoginPage() {
                 </svg>
                 <span className="text-[10px] text-white/60 uppercase font-bold tracking-tighter">
                   Google
-                </span>
-              </button>
-
-              {/* TikTok */}
-              <button 
-                className="flex flex-col items-center justify-center gap-2 h-20 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-                type="button"
-                onClick={() => handleSocialSignIn('tiktok')}
-                disabled={isLoading}
-              >
-                <TikTokLogo className="w-6 h-6" />
-                <span className="text-[10px] text-white/60 uppercase font-bold tracking-tighter">
-                  TikTok
                 </span>
               </button>
 

@@ -24,7 +24,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
     sendResetPassword: async ({ user, url, token }, request) => {
@@ -33,12 +33,6 @@ export const auth = betterAuth({
     },
     onPasswordReset: async ({ user }, request) => {
       console.log(`Password for user ${user.email} has been reset.`);
-    },
-  },
-  emailVerification: {
-    sendVerificationEmail: async ({ user, url, token }, request) => {
-      // TODO: Implement email sending for verification
-      console.log(`Verification link for ${user.email}: ${url}`);
     },
   },
   socialProviders: {
@@ -54,10 +48,6 @@ export const auth = betterAuth({
       clientId: process.env.TWITTER_CLIENT_ID as string,
       clientSecret: process.env.TWITTER_CLIENT_SECRET as string,
     },
-    tiktok: {
-      clientKey: process.env.TIKTOK_CLIENT_KEY as string,
-      clientSecret: process.env.TIKTOK_CLIENT_SECRET as string,
-    },
   },
   plugins: [
     jwt(),
@@ -70,7 +60,7 @@ export const auth = betterAuth({
       otpLength: 6,
       expiresIn: 300,
       allowedAttempts: 3,
-      sendVerificationOnSignUp: false,
+      sendVerificationOnSignUp: true,
     }),
     username(),
     nextCookies(),
