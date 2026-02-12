@@ -479,143 +479,142 @@ const challengePrizeConfigs = [
   { position: 100, amount: 0.10 }  // 100th place: $0.10
 ];
 
-// async function main() {
-//   console.log('🌱 Starting database seeding...');
+async function main() {
+  console.log('🌱 Starting database seeding...');
 
-//   // Clear existing challenges and prizes
-//   await prisma.challenge.deleteMany();
-//   await prisma.challengePrizes.deleteMany();
-//   console.log('🗑️  Cleared existing challenges and prizes');
+  // Clear existing challenges and prizes
+  await prisma.challenge.deleteMany();
+  await prisma.challengePrizes.deleteMany();
+  console.log('🗑️  Cleared existing challenges and prizes');
 
-//   const gameTypes: Array<'image' | 'text' | 'transformation' | 'refinement' | 'evaluation'> = 
-//     ['image', 'text', 'transformation', 'refinement', 'evaluation'];
+  const gameTypes: Array<'image' | 'text' | 'transformation' | 'refinement' | 'evaluation'> = 
+    ['image', 'text', 'transformation', 'refinement', 'evaluation'];
   
-//   const difficulties: Array<'beginner' | 'intermediate' | 'advanced'> = 
-//     ['beginner', 'intermediate', 'advanced'];
+  const difficulties: Array<'beginner' | 'intermediate' | 'advanced'> = 
+    ['beginner', 'intermediate', 'advanced'];
 
-//   let totalChallenges = 0;
+  let totalChallenges = 0;
+  let totalPrizes = 0;
 
-//   // Generate challenges for all combinations
-//   for (const gameType of gameTypes) {
-//     for (const difficulty of difficulties) {
-//       const templates = challengeTemplates[gameType][difficulty];
+  // Generate challenges for all combinations
+  for (const gameType of gameTypes) {
+    for (const difficulty of difficulties) {
+      const templates = challengeTemplates[gameType][difficulty];
       
-//       for (let i = 0; i < templates.length; i++) {
-//         const template = templates[i];
-//         const modelType = gameType === 'image' ? 'image_generation' : 'text_generation';
+      for (let i = 0; i < templates.length; i++) {
+        const template = templates[i];
+        const modelType = gameType === 'image' ? 'image_generation' : 'text_generation';
         
-//         const challenge = await prisma.challenge.create({
-//           data: {
-//             id: `${gameType}-${difficulty}-${i + 1}`,
-//             title: template.title,
-//             description: template.description,
-//             gameType,
-//             difficulty,
-//             modelType,
-//             modelName: template.modelName,
-//             task: {
-//               objective: template.objective,
-//               constraints: {
-//                 required: template.required,
-//                 forbidden: template.forbidden,
-//                 optional: template.optional
-//               }
-//             },
-//             gameplay: {
-//               turnBased: gameType === 'refinement',
-//               maxTurns: template.maxTurns,
-//               timeLimitSeconds: template.timeLimit,
-//               scoringMode: template.scoringMode
-//             },
-//             scoring: scoringConfigs[template.scoringMode as keyof typeof scoringConfigs],
-//             rewards: rewardConfigs[difficulty],
-//             minScore: difficulty === 'beginner' ? 30 : difficulty === 'intermediate' ? 50 : 70,
-//             maxXpPerTurn: difficulty === 'beginner' ? 20 : difficulty === 'intermediate' ? 40 : 60
-//           }
-//         });
+        const challenge = await prisma.challenge.create({
+          data: {
+            id: `${gameType}-${difficulty}-${i + 1}`,
+            title: template.title,
+            description: template.description,
+            gameType,
+            difficulty,
+            modelType,
+            modelName: template.modelName,
+            task: {
+              objective: template.objective,
+              constraints: {
+                required: template.required,
+                forbidden: template.forbidden,
+                optional: template.optional
+              }
+            },
+            gameplay: {
+              turnBased: gameType === 'refinement',
+              maxTurns: template.maxTurns,
+              timeLimitSeconds: template.timeLimit,
+              scoringMode: template.scoringMode
+            },
+            scoring: scoringConfigs[template.scoringMode as keyof typeof scoringConfigs],
+            rewards: rewardConfigs[difficulty],
+            minScore: difficulty === 'beginner' ? 30 : difficulty === 'intermediate' ? 50 : 70,
+            maxXpPerTurn: difficulty === 'beginner' ? 20 : difficulty === 'intermediate' ? 40 : 60
+          }
+        });
 
-//         totalChallenges++;
-//         console.log(`✅ Created challenge: ${challenge.title} (${gameType} - ${difficulty})`);
-//         console.log(`   📋 ID: ${challenge.id}`);
-//         console.log(`   🎮 Game Type: ${gameType}`);
-//         console.log(`   📈 Difficulty: ${difficulty}`);
-//         console.log(`   🤖 Model: ${template.modelName}`);
-//         console.log(`   ⏱️  Time Limit: ${template.timeLimit}s`);
-//         console.log(`   🔄 Turn-based: ${gameType === 'refinement' ? 'Yes' : 'No'}`);
-//         console.log(`   🏆 XP Reward: ${rewardConfigs[difficulty].xp}`);
-//         console.log(`   🎯 Min Score: ${difficulty === 'beginner' ? 30 : difficulty === 'intermediate' ? 50 : 70}`);
-//         console.log(`   ⭐ Max XP/turn: ${difficulty === 'beginner' ? 20 : difficulty === 'intermediate' ? 40 : 60}`);
-//         console.log('');
-//       }
-//     }
-//   }
+        totalChallenges++;
+        console.log(`✅ Created challenge: ${challenge.title} (${gameType} - ${difficulty})`);
+        console.log(`   📋 ID: ${challenge.id}`);
+        console.log(`   🎮 Game Type: ${gameType}`);
+        console.log(`   📈 Difficulty: ${difficulty}`);
+        console.log(`   🤖 Model: ${template.modelName}`);
+        console.log(`   ⏱️  Time Limit: ${template.timeLimit}s`);
+        console.log(`   🔄 Turn-based: ${gameType === 'refinement' ? 'Yes' : 'No'}`);
+        console.log(`   🏆 XP Reward: ${rewardConfigs[difficulty].xp}`);
+        console.log(`   🎯 Min Score: ${difficulty === 'beginner' ? 30 : difficulty === 'intermediate' ? 50 : 70}`);
+        console.log(`   ⭐ Max XP/turn: ${difficulty === 'beginner' ? 20 : difficulty === 'intermediate' ? 40 : 60}`);
+        console.log('');
 
-//   // Seed challenge prizes
-//   console.log('\n💰 Seeding challenge prizes...');
-//   let totalPrizes = 0;
+        // Create prizes for this challenge
+        for (const prizeConfig of challengePrizeConfigs) {
+          await prisma.challengePrizes.create({
+            data: {
+              challengeId: challenge.id,
+              position: prizeConfig.position,
+              amount: prizeConfig.amount
+            }
+          });
+          
+          totalPrizes++;
+          console.log(`💵 Created prize for ${challenge.id}: Position ${prizeConfig.position} - $${prizeConfig.amount.toFixed(2)}`);
+        }
+      }
+    }
+  }
+
+  console.log(`💰 Successfully seeded ${totalPrizes} challenge prizes!`);
+  console.log(`🎉 Successfully seeded ${totalChallenges} challenges!`);
+  console.log('\n📊 Summary:');
   
-//   for (const prizeConfig of challengePrizeConfigs) {
-//     await prisma.challengePrizes.create({
-//       data: {
-//         position: prizeConfig.position,
-//         amount: prizeConfig.amount
-//       }
-//     });
-    
-//     totalPrizes++;
-//     console.log(`💵 Created prize: Position ${prizeConfig.position} - $${prizeConfig.amount.toFixed(2)}`);
-//   }
+  for (const gameType of gameTypes) {
+    const count = await prisma.challenge.count({
+      where: { gameType }
+    });
+    console.log(`   ${gameType}: ${count} challenges`);
+  }
 
-//   console.log(`💰 Successfully seeded ${totalPrizes} challenge prizes!`);
-//   console.log(`🎉 Successfully seeded ${totalChallenges} challenges!`);
-//   console.log('\n📊 Summary:');
+  console.log('\n🎯 Challenge Breakdown by Difficulty:');
+  for (const difficulty of difficulties) {
+    const count = await prisma.challenge.count({
+      where: { difficulty }
+    });
+    console.log(`   ${difficulty}: ${count} challenges`);
+  }
+
+  console.log('\n🔢 Total Database Stats:');
+  const totalChallengeCount = await prisma.challenge.count();
+  console.log(`   Total Challenges: ${totalChallengeCount}`);
+  console.log(`   Total Possible Combinations: ${gameTypes.length * difficulties.length * 2}`); // 2 templates per combination
   
-//   for (const gameType of gameTypes) {
-//     const count = await prisma.challenge.count({
-//       where: { gameType }
-//     });
-//     console.log(`   ${gameType}: ${count} challenges`);
-//   }
+  // Show some example challenges for each game type
+  console.log('\n📋 Example Challenges:');
+  for (const gameType of gameTypes) {
+    const example = await prisma.challenge.findFirst({
+      where: { gameType },
+      select: {
+        id: true,
+        title: true,
+        difficulty: true,
+        modelName: true
+      }
+    });
+    if (example) {
+      console.log(`   ${gameType}: "${example.title}" (${example.difficulty}) - ${example.modelName}`);
+    }
+  }
 
-//   console.log('\n🎯 Challenge Breakdown by Difficulty:');
-//   for (const difficulty of difficulties) {
-//     const count = await prisma.challenge.count({
-//       where: { difficulty }
-//     });
-//     console.log(`   ${difficulty}: ${count} challenges`);
-//   }
+  console.log('\n✨ Seeder completed successfully!');
+  console.log('🚀 You can now start testing challenges with the new Chat/Message structure!');
+}
 
-//   console.log('\n🔢 Total Database Stats:');
-//   const totalChallengeCount = await prisma.challenge.count();
-//   console.log(`   Total Challenges: ${totalChallengeCount}`);
-//   console.log(`   Total Possible Combinations: ${gameTypes.length * difficulties.length * 2}`); // 2 templates per combination
-  
-//   // Show some example challenges for each game type
-//   console.log('\n📋 Example Challenges:');
-//   for (const gameType of gameTypes) {
-//     const example = await prisma.challenge.findFirst({
-//       where: { gameType },
-//       select: {
-//         id: true,
-//         title: true,
-//         difficulty: true,
-//         modelName: true
-//       }
-//     });
-//     if (example) {
-//       console.log(`   ${gameType}: "${example.title}" (${example.difficulty}) - ${example.modelName}`);
-//     }
-//   }
-
-//   console.log('\n✨ Seeder completed successfully!');
-//   console.log('🚀 You can now start testing challenges with the new Chat/Message structure!');
-// }
-
-// main()
-//   .catch((e) => {
-//     console.error('❌ Error seeding database:', e);
-//     process.exit(1);
-//   })
-//   .finally(async () => {
-//     await prisma.$disconnect();
-//   });
+main()
+  .catch((e) => {
+    console.error('❌ Error seeding database:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

@@ -63,15 +63,46 @@ export default function SecurePage() {
           }, 1500);
         } else if (data.banned) {
           setError("Account flagged for suspicious activity. You have been logged out.");
+          
+          // Log the user out before redirecting
+          try {
+            await fetch('/api/auth/signout', {
+              method: 'POST',
+            });
+          } catch (err) {
+            console.error('Failed to logout user:', err);
+          }
+          
           setTimeout(() => {
             router.push("/login");
           }, 3000);
+        } else {
+          // Handle other non-success cases
+          setError(data.error || "Security check failed");
+          setTimeout(() => {
+            router.push("/challenge");
+          }, 3000);
         }
       } else {
+        // Handle HTTP errors (including 401 when account is deleted)
         setError(data.error || "Security check failed");
-        setTimeout(() => {
-          router.push("/challenge");
-        }, 3000);
+        if (response.status === 401) {
+          // Account was likely deleted, logout and redirect to login
+          try {
+            await fetch('/api/auth/signout', {
+              method: 'POST',
+            });
+          } catch (err) {
+            console.error('Failed to logout user:', err);
+          }
+          setTimeout(() => {
+            router.push("/login");
+          }, 3000);
+        } else {
+          setTimeout(() => {
+            router.push("/challenge");
+          }, 3000);
+        }
       }
     } catch (err) {
       console.error('Secure check error:', err);

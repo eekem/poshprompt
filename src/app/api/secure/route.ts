@@ -51,9 +51,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      // User might have been deleted due to fraud, check for this
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { 
+          error: 'Account flagged for suspicious activity',
+          banned: true 
+        },
+        { status: 200 } // Return 200 so client can handle the fraud case
       );
     }
 
@@ -82,10 +86,11 @@ export async function POST(request: NextRequest) {
         ip
       });
 
-      // Check for suspicious activity - same fingerprint used by multiple accounts
-      const existingFingerprintUsers = await prisma.userFingerprint.findMany({
+      // Check for suspicious activity - same fingerprint used by multiple DIFFERENT accounts
+      const otherUsersWithFingerprint = await prisma.userFingerprint.findMany({
         where: {
           fingerprint,
+          userId: { not: user.id }, // Exclude current user
           user: {
             banned: false
           }
@@ -95,15 +100,10 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      // Count how many different users have this fingerprint
-      const uniqueUsersWithFingerprint = new Set(
-        existingFingerprintUsers.map(fp => fp.userId)
-      );
-
-      // If more than one user has this fingerprint, it's suspicious
-      if (uniqueUsersWithFingerprint.size > 1) {
-        console.warn(`FRAUD DETECTED: Fingerprint ${fingerprint} used by multiple accounts:`, 
-          existingFingerprintUsers.map(fp => fp.user.email));
+      // If other users have this fingerprint, it's fraud
+      if (otherUsersWithFingerprint.length > 0) {
+        console.warn(`FRAUD DETECTED: Fingerprint ${fingerprint} already used by existing account(s):`, 
+          otherUsersWithFingerprint.map(fp => fp.user.email));
         
         // Delete the current user's account for fraud
         await prisma.user.delete({
