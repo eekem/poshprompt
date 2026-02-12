@@ -1,0 +1,507 @@
+# =============================================
+# PoshPrompt Challenge Templates
+# File: challenge_templates.yaml
+# Format: Mini-Model Training + Stress Test (v2.0)
+# =============================================
+
+version: "2.0"
+description: "Ready-to-use challenge templates for the new Train → Stress Test gameplay loop"
+
+templates:
+
+  - id: train-savage-reviewer-001
+    title: "Savage Code Reviewer"
+    role: "Brutally honest but professional code reviewer"
+    difficulty: intermediate
+    description: "Train a mini-AI that delivers funny, technically accurate, and actionable code reviews without being toxic."
+    estimated_time: 25
+    prerequisites: ["Basic programming knowledge", "Understanding of code review practices"]
+    learning_objectives: ["Technical accuracy in feedback", "Balancing humor with professionalism", "Actionable improvement suggestions"]
+    training:
+      rounds: 5
+      max_words_per_prompt: 40
+      time_per_round: 240
+      constraints:
+        required:
+          - "Always mention at least 2 real technical issues"
+          - "Keep tone savage but constructive"
+          - "Include specific improvement suggestions"
+        forbidden:
+          - "Profanity or personal attacks"
+          - "Vague feedback without specifics"
+        optional:
+          - "Include funny metaphors or analogies"
+          - "Reference best practices or design patterns"
+      progressive_difficulty:
+        round_1: "Review simple JavaScript function"
+        round_2: "Review complex class with multiple methods"
+        round_3: "Review code with security vulnerability"
+        round_4: "Review code in unfamiliar language/framework"
+        round_5: "Review actually good, clean code (must stay constructive)"
+    stress_test:
+      num_cases: 6
+      test_types: [adversarial, edge_case, contradictory, extreme_constraint]
+      sample_cases:
+        - input: "Review this perfect, clean code that follows all best practices"
+          expected: "Still finds minor improvements while acknowledging quality"
+          weight: 1.5
+        - input: "Review this code written by a very defensive, emotional developer"
+          expected: "Maintains professionalism while being direct"
+          weight: 1.2
+        - input: "Review this code with a critical security vulnerability"
+          expected: "Prioritizes security concerns with urgency"
+          weight: 2.0
+        - input: "Review this Rust code (training was on JavaScript)"
+          expected: "Adapts review style to new language"
+          weight: 1.0
+        - input: "Review this code but be extremely polite (tone flip)"
+          expected: "Maintains technical accuracy while being very gentle"
+          weight: 1.3
+        - input: "Review this one-liner code golf solution"
+          expected: "Addresses readability vs cleverness trade-offs"
+          weight: 1.0
+    scoring:
+      total_score: 100
+      passing_score: 70
+      breakdown:
+        consistency: 30
+        output_quality: 25
+        robustness: 25
+        creativity: 10
+        brevity: 10
+    rewards:
+      base_xp: 65
+      base_coins: 12
+      completion_bonus:
+        high_robustness: 15
+        perfect_run: 20
+    metadata:
+      tags: ["code-review", "technical", "humor", "professionalism"]
+      category: "Development Skills"
+      creator: "PoshPrompt Team"
+      version: "2.0"
+
+  - id: train-breakup-advisor-001
+    title: "Emotional Breakup Advisor"
+    role: "Empathetic but honest relationship advisor"
+    difficulty: intermediate
+    description: "Train a mini-AI that helps users write kind, clear, and emotionally intelligent breakup messages or advice."
+    estimated_time: 20
+    prerequisites: ["Emotional intelligence", "Communication skills"]
+    learning_objectives: ["Empathetic communication", "Clarity in difficult conversations", "Ethical guidance"]
+    training:
+      rounds: 4
+      max_words_per_prompt: 30
+      time_per_round: 180
+      constraints:
+        required:
+          - "Show genuine empathy and compassion"
+          - "Be honest and direct without cruelty"
+          - "Focus on healing and closure"
+        forbidden:
+          - "Encouraging harmful or manipulative behavior"
+          - "Being overly harsh or judgmental"
+          - "Giving definitive relationship advice"
+        optional:
+          - "Suggest professional help when appropriate"
+          - "Include self-care recommendations"
+      progressive_difficulty:
+        round_1: "Help write a gentle breakup message for casual relationship"
+        round_2: "Advise on long-term relationship breakup"
+        round_3: "Handle situation where partner is vulnerable"
+        round_4: "Deal with complex breakup (living together, shared pets)"
+    stress_test:
+      num_cases: 7
+      test_types: [adversarial, contradictory, safety_critical, extreme_constraint]
+      sample_cases:
+        - input: "User is in potential danger and needs help leaving abusive situation"
+          expected: "Prioritizes safety, provides resources, avoids relationship advice"
+          weight: 2.0
+        - input: "User keeps changing their mind about breaking up"
+          expected: "Helps clarify feelings without making decision for them"
+          weight: 1.2
+        - input: "Need breakup message in under 10 words"
+          expected: "Conveys essential message with compassion in extreme brevity"
+          weight: 1.5
+        - input: "User's cultural background requires specific approach to relationships"
+          expected: "Respects cultural differences while maintaining ethical stance"
+          weight: 1.3
+        - input: "User wants to stay in clearly toxic relationship"
+          expected: "Gently challenges perspective while respecting autonomy"
+          weight: 1.4
+        - input: "Breakup involving religious marriage considerations"
+          expected: "Acknowledges complexity while focusing on wellbeing"
+          weight: 1.2
+        - input: "User is the one being broken up with, needs coping advice"
+          expected: "Provides support for healing and self-care"
+          weight: 1.0
+    scoring:
+      total_score: 100
+      passing_score: 75
+      breakdown:
+        consistency: 30
+        output_quality: 30
+        robustness: 25
+        empathy: 15
+    rewards:
+      base_xp: 60
+      base_coins: 10
+      completion_bonus:
+        high_robustness: 12
+        ethical_handling: 18
+    metadata:
+      tags: ["emotional-intelligence", "communication", "ethics", "relationships"]
+      category: "Soft Skills"
+      creator: "PoshPrompt Team"
+      version: "2.0"
+
+  - id: train-spec-writer-001
+    title: "Chaos Ticket → Bulletproof Spec"
+    role: "Senior Product Engineer"
+    difficulty: advanced
+    description: "Train a mini-AI that transforms vague, messy, or contradictory tickets into clean, complete product specifications."
+    estimated_time: 35
+    prerequisites: ["Technical writing", "Product management", "System design"]
+    learning_objectives: ["Requirements analysis", "Technical specification writing", "Stakeholder management"]
+    training:
+      rounds: 5
+      max_words_per_prompt: 45
+      time_per_round: 300
+      constraints:
+        required:
+          - "Use Given-When-Then format for user stories"
+          - "Include acceptance criteria with clear pass/fail conditions"
+          - "Address edge cases and non-functional requirements"
+          - "Define success metrics and KPIs"
+        forbidden:
+          - "Implementation details or specific code solutions"
+          - "Making assumptions without clarifying questions"
+        optional:
+          - "Include technical constraints and dependencies"
+          - "Suggest testing strategies"
+      progressive_difficulty:
+        round_1: "Convert simple feature request to user story"
+        round_2: "Handle vague business requirement with multiple interpretations"
+        round_3: "Resolve conflicting stakeholder requirements"
+        round_4: "Create spec for integration with external system"
+        round_5: "Transform emergency bug report into comprehensive feature spec"
+    stress_test:
+      num_cases: 6
+      test_types: [contradictory, edge_case, out_of_distribution]
+      sample_cases:
+        - input: "Ticket is just a meme or emoji with title 'Fix it'"
+          expected: "Asks clarifying questions while providing template structure"
+          weight: 1.5
+        - input: "Three stakeholders with completely conflicting requirements"
+          expected: "Acknowledges conflicts and suggests resolution approach"
+          weight: 2.0
+        - input: "Legacy system integration with unknown constraints"
+          expected: "Defines discovery process and risk mitigation strategies"
+          weight: 1.3
+        - input: "Must include security, performance, and accessibility requirements"
+          expected: "Comprehensively covers all non-functional aspects"
+          weight: 1.4
+        - input: "Ticket for AI feature with no technical background"
+          expected: "Translates business requirements into technical specifications"
+          weight: 1.2
+        - input: "Emergency production issue requiring immediate spec"
+          expected: "Balances thoroughness with urgency and prioritization"
+          weight: 1.6
+    scoring:
+      total_score: 100
+      passing_score: 70
+      breakdown:
+        consistency: 25
+        output_quality: 30
+        robustness: 30
+        completeness: 15
+    rewards:
+      base_xp: 80
+      base_coins: 18
+      completion_bonus:
+        high_robustness: 20
+        stakeholder_handling: 15
+    metadata:
+      tags: ["technical-writing", "product-management", "specifications", "engineering"]
+      category: "Professional Skills"
+      creator: "PoshPrompt Team"
+      version: "2.0"
+
+  - id: train-useless-superpower-001
+    title: "Useless Superpower Storyteller"
+    role: "Master of Absurd Origin Stories"
+    difficulty: beginner
+    description: "Train a mini-AI that turns ridiculous superpowers into surprisingly compelling, emotional, or hilarious character backstories."
+    estimated_time: 15
+    prerequisites: ["Creative writing", "Storytelling basics"]
+    learning_objectives: ["Creative narrative construction", "Character development", "Finding meaning in absurdity"]
+    training:
+      rounds: 4
+      max_words_per_prompt: 40
+      time_per_round: 150
+      constraints:
+        required:
+          - "Create emotional connection to character"
+          - "Include origin story with cause and effect"
+          - "Show how power affects character's life"
+        forbidden:
+          - "Just describe the power literally"
+          - "Make story purely comedic without depth"
+        optional:
+          - "Include surprising plot twist"
+          - "Connect to universal human experience"
+      progressive_difficulty:
+        round_1: "Create backstory for 'ability to perfectly toast bread'"
+        round_2: "Make 'summon one specific squirrel' profound"
+        round_3: "Turn 'always know exact cheese temperature' emotional"
+        round_4: "Combine two ridiculous powers into coherent story"
+    stress_test:
+      num_cases: 5
+      test_types: [adversarial, extreme_constraint]
+      sample_cases:
+        - input: "Power: 'Can make any pen cap click exactly once'"
+          expected: "Creates meaningful narrative around trivial ability"
+          weight: 1.0
+        - input: "Make the story tragic instead of funny"
+          expected: "Shifts tone while maintaining core narrative"
+          weight: 1.3
+        - input: "Rewrite for children's book audience (was dark humor)"
+          expected: "Adapts content appropriately while keeping essence"
+          weight: 1.4
+        - input: "Continue story after user tries to derail with nonsense"
+          expected: "Maintains narrative coherence despite interruption"
+          weight: 1.2
+        - input: "Connect 'ability to find lost socks' to climate change"
+          expected: "Creates surprisingly meaningful thematic connection"
+          weight: 1.5
+    scoring:
+      total_score: 100
+      passing_score: 65
+      breakdown:
+        consistency: 25
+        output_quality: 25
+        robustness: 20
+        creativity: 30
+    rewards:
+      base_xp: 50
+      base_coins: 8
+      completion_bonus:
+        creative_twist: 12
+        emotional_impact: 10
+    metadata:
+      tags: ["creative-writing", "storytelling", "humor", "character-development"]
+      category: "Creative Skills"
+      creator: "PoshPrompt Team"
+      version: "2.0"
+
+  - id: train-meme-lord-001
+    title: "Viral Thread Engineer"
+    role: "Meme-to-Viral Thread Converter"
+    difficulty: intermediate
+    description: "Train a mini-AI that turns boring facts or ideas into highly engaging, platform-specific viral threads."
+    estimated_time: 22
+    prerequisites: ["Social media knowledge", "Content writing", "Trend awareness"]
+    learning_objectives: ["Platform-specific content adaptation", "Engagement optimization", "Trend integration"]
+    training:
+      rounds: 5
+      max_words_per_prompt: 35
+      time_per_round: 210
+      constraints:
+        required:
+          - "Make content highly shareable and engaging"
+          - "Use platform-appropriate formatting and style"
+          - "Include clear call-to-action or hook"
+        forbidden:
+          - "Spreading misinformation or fake news"
+          - "Using engagement bait without substance"
+        optional:
+          - "Include relevant hashtags or tags"
+          - "Reference current trends or memes"
+      progressive_difficulty:
+        round_1: "Convert boring scientific fact into Twitter thread"
+        round_2: "Make historical event engaging for TikTok audience"
+        round_3: "Turn technical concept into LinkedIn viral post"
+        round_4: "Adapt content for multiple platforms simultaneously"
+        round_5: "Create thread from completely dry topic (tax law)"
+    stress_test:
+      num_cases: 6
+      test_types: [adversarial, extreme_constraint]
+      sample_cases:
+        - input: "Make this go viral on LinkedIn instead of Twitter/X"
+          expected: "Adapts tone, formatting, and professional context"
+          weight: 1.3
+        - input: "Fact provided is actually false (handle gracefully)"
+          expected: "Addresses issue without ruining engagement"
+          weight: 1.8
+        - input: "Turn offensive topic into wholesome viral content"
+          expected: "Reframes positively while maintaining engagement"
+          weight: 1.5
+        - input: "Strict character limit: 280 characters total"
+          expected: "Maximum impact in extreme brevity constraint"
+          weight: 1.4
+        - input: "Make boring Excel tutorial go viral on Instagram"
+          expected: "Visual-first approach with engaging caption"
+          weight: 1.2
+        - input: "Convert complex physics concept into Reddit thread"
+          expected: "Uses Reddit-specific formatting and community knowledge"
+          weight: 1.1
+    scoring:
+      total_score: 100
+      passing_score: 70
+      breakdown:
+        consistency: 30
+        output_quality: 25
+        robustness: 20
+        creativity: 25
+    rewards:
+      base_xp: 55
+      base_coins: 10
+      completion_bonus:
+        platform_mastery: 15
+        viral_potential: 12
+    metadata:
+      tags: ["social-media", "content-creation", "marketing", "trends"]
+      category: "Marketing Skills"
+      creator: "PoshPrompt Team"
+      version: "2.0"
+
+  - id: train-debug-guru-001
+    title: "Debug Guru"
+    role: "Calm and methodical debugging expert"
+    difficulty: advanced
+    description: "Train a mini-AI that helps developers debug complex, frustrating bugs with clear step-by-step reasoning."
+    estimated_time: 30
+    prerequisites: ["Programming experience", "Debugging methodologies", "System thinking"]
+    learning_objectives: ["Systematic problem solving", "Clear technical communication", "Root cause analysis"]
+    training:
+      rounds: 5
+      max_words_per_prompt: 50
+      time_per_round: 270
+      constraints:
+        required:
+          - "Ask clarifying questions when information is missing"
+          - "Provide reproducible steps for testing hypotheses"
+          - "Explain reasoning behind each debugging step"
+        forbidden:
+          - "Guessing without evidence or jumping to conclusions"
+          - "Providing solutions without understanding the problem"
+        optional:
+          - "Suggest preventive measures for future issues"
+          - "Reference common debugging patterns or anti-patterns"
+      progressive_difficulty:
+        round_1: "Debug simple syntax error in familiar language"
+        round_2: "Handle intermittent bug that's hard to reproduce"
+        round_3: "Debug performance issue with no obvious bottlenecks"
+        round_4: "Handle bug in unfamiliar codebase/language"
+        round_5: "Debug race condition or timing-related issue"
+    stress_test:
+      num_cases: 7
+      test_types: [contradictory, edge_case, out_of_distribution]
+      sample_cases:
+        - input: "Bug report is just 'it doesn't work' with no details"
+          expected: "Asks systematic questions to gather necessary information"
+          weight: 1.5
+        - input: "User provides conflicting error messages"
+          expected: "Identifies contradictions and resolves confusion"
+          weight: 1.3
+        - input: "Bug only occurs in production, not development"
+          expected: "Suggests environment-specific debugging approaches"
+          weight: 1.4
+        - input: "Legacy system with no documentation or tests"
+          expected: "Provides strategies for understanding unknown systems"
+          weight: 1.6
+        - input: "Bug that 'fixes itself' when you add logging"
+          expected: "Explains Heisenbugs and timing-related issues"
+          weight: 1.8
+        - input: "Multiple bugs that might be related"
+          expected: "Helps prioritize and find potential connections"
+          weight: 1.2
+        - input: "Bug in quantum computing code (unusual domain)"
+          expected: "Adapts debugging approach to specialized domain"
+          weight: 1.1
+    scoring:
+      total_score: 100
+      passing_score: 70
+      breakdown:
+        consistency: 25
+        output_quality: 30
+        robustness: 30
+        methodical_approach: 15
+    rewards:
+      base_xp: 75
+      base_coins: 15
+      completion_bonus:
+        systematic_thinking: 18
+        complex_debugging: 20
+    metadata:
+      tags: ["debugging", "problem-solving", "technical", "methodical"]
+      category: "Development Skills"
+      creator: "PoshPrompt Team"
+      version: "2.0"
+
+  - id: train-story-refiner-001
+    title: "Story Refiner"
+    role: "Master Narrative Editor"
+    difficulty: intermediate
+    description: "Train a mini-AI that iteratively improves short stories based on user feedback while keeping the original voice."
+    estimated_time: 18
+    prerequisites: ["Creative writing", "Editorial skills", "Story structure knowledge"]
+    learning_objectives: ["Iterative improvement", "Voice preservation", "Constructive editing"]
+    training:
+      rounds: 4
+      max_words_per_prompt: 30
+      time_per_round: 165
+      constraints:
+        required:
+          - "Maintain the author's original voice and style"
+          - "Address specific feedback points directly"
+          - "Explain reasoning behind each change"
+        forbidden:
+          - "Completely rewriting the author's work"
+          - "Ignoring feedback in favor of own preferences"
+        optional:
+          - "Suggest alternative approaches when feedback is unclear"
+          - "Preserve the story's core message and themes"
+      progressive_difficulty:
+        round_1: "Improve story pacing based on feedback"
+        round_2: "Enhance character development while keeping voice"
+        round_3: "Refine dialogue to sound more natural"
+        round_4: "Balance multiple conflicting feedback suggestions"
+    stress_test:
+      num_cases: 5
+      test_types: [adversarial, extreme_constraint]
+      sample_cases:
+        - input: "Feedback is vague like 'make it better'"
+          expected: "Asks specific questions to understand improvement areas"
+          weight: 1.4
+        - input: "Multiple contradictory feedback points"
+          expected: "Helps prioritize and find compromise solutions"
+          weight: 1.6
+        - input: "Feedback would change story's fundamental nature"
+          expected: "Addresses concerns while preserving core identity"
+          weight: 1.3
+        - input: "Must improve story in under 50 words total"
+          expected: "Maximum impact with extreme brevity constraint"
+          weight: 1.5
+        - input: "Author wants to add sci-fi element to romance story"
+          expected: "Integrates new element naturally without disruption"
+          weight: 1.2
+    scoring:
+      total_score: 100
+      passing_score: 70
+      breakdown:
+        consistency: 30
+        output_quality: 25
+        robustness: 20
+        voice_preservation: 25
+    rewards:
+      base_xp: 58
+      base_coins: 9
+      completion_bonus:
+        voice_mastery: 15
+        diplomatic_editing: 12
+    metadata:
+      tags: ["creative-writing", "editing", "storytelling", "collaboration"]
+      category: "Creative Skills"
+      creator: "PoshPrompt Team"
+      version: "2.0"

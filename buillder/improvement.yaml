@@ -1,0 +1,418 @@
+# =============================================
+# PoshPrompt System Specification v2.0
+# "Train your mini-AI. Break it. Get scored."
+# =============================================
+
+app:
+  name: PoshPrompt
+  version: "2.0"
+  type: web_app
+  tagline: "Train your AI. Break it. Get scored."
+  description: >
+    PoshPrompt is a chat-first platform where users train their own mini-AI specialist 
+    through iterative prompting. After training, the platform runs a brutal stress test 
+    with hidden adversarial cases and gives an instant robustness score. 
+    Users compete on leaderboards, earn XP/coins, and can publish their best mini-models.
+  target_audience:
+    - AI enthusiasts & prompt engineers
+    - Software developers
+    - Students and creatives
+  ui_style:
+    tone: minimal
+    theme: premium
+    layout: chat_first
+    inspiration: [ChatGPT, Linear]
+    design_tokens:
+      colors:
+        primary: "#f59e0b"
+        primary_accent: "#fbbf24"
+        background_light: "#f7f6f8"
+        background_dark: "#0a0908"
+        panel_dark: "#1a1612"
+        border_dark: "#2d2419"
+      fonts:
+        display: '"Space Grotesk", sans-serif'
+
+core_mechanics:
+  gameplay_type: mini_model_training
+  description: Users act as "AI trainers". They iteratively build a system prompt + examples for a specific role. The entire chat history becomes the mini-model's context. At the end, the system runs unseen stress tests using a single backend LLM.
+  key_differentiator: Turns passive prompting into active agent-building + robustness testing.
+  training_phases:
+    - brief: "User gets role, goal, success criteria (30s)"
+    - training: "4-5 rounds of iterative refinement (3-6 min per round)"
+    - lock_and_test: "System runs 5-7 hidden adversarial cases"
+    - results: "Robustness score 0-100 with detailed breakdown"
+  stress_testing:
+    approach: "single_model_batch_testing"
+    consistency: "low_temperature (0.2) for reproducible results"
+    test_categories:
+      - adversarial: "Malicious inputs, edge cases, boundary testing"
+      - edge_case: "Unusual but valid scenarios"
+      - contradictory: "Conflicting requirements"
+      - extreme_constraint: "Tight limits on output format/length"
+      - out_of_distribution: "Completely unexpected inputs"
+  scoring_algorithm:
+    primary: "robustness_score"
+    calculation: "weighted_average_across_all_test_cases"
+    bonus_criteria:
+      - consistency_bonus: "+10 for stable outputs across similar inputs"
+      - creativity_bonus: "+5 for novel solutions within constraints"
+      - brevity_bonus: "+5 for concise, efficient responses"
+
+gameplay_loop:
+  phases:
+    - name: brief
+      duration_seconds: 30
+      content: 
+        role_display: "Clear character/persona definition"
+        goal_statement: "Specific objective and success metrics"
+        constraints_preview: "Key rules and limitations"
+        example_outputs: "2-3 samples of ideal responses"
+      ui_elements:
+        - countdown_timer: "Large, prominent countdown"
+        - role_card: "Visual persona representation"
+        - progress_bar: "Phase progression indicator"
+        
+    - name: training
+      rounds: 4-5
+      duration_seconds: 180-360
+      mechanics:
+        - prompt_engineering: "User writes/refines system instructions"
+        - contextual_response: "Backend LLM responds using accumulated context"
+        - instant_feedback: "Light inline scoring and hints after each round"
+        - progressive_difficulty: "New constraints or complexity per round"
+        - word_limit_enforcement: "Real-time character/word counter"
+      round_structure:
+        - pre_round: "Show new constraint or twist (10s)"
+        - prompt_input: "User refinement period (60-120s)"
+        - ai_response: "Model generates output (5-10s)"
+        - feedback_display: "Score + hints (15s)"
+        - round_summary: "Cumulative progress update (10s)"
+      adaptive_elements:
+        - difficulty_scaling: "Adjusts based on user performance"
+        - hint_system: "Progressive hint availability"
+        - constraint_evolution: "New rules emerge based on patterns"
+        
+    - name: lock_and_stress_test
+      description: "User locks their final mini-model. System runs comprehensive stress test suite."
+      mechanics:
+        - finalization: "User confirms final system prompt"
+        - batch_testing: "All test cases run in parallel (30-60s)"
+        - live_progress: "Real-time test execution visualization"
+        - result_streaming: "Results appear as they complete"
+      testing_protocol:
+        temperature: 0.2
+        max_tokens: 600
+        batch_size: "parallel_execution"
+        timeout_per_test: 30
+        retry_logic: "max_2_retries_per_test"
+      test_execution:
+        - adversarial_cases: "3-4 tests trying to break the model"
+        - edge_cases: "2-3 unusual but valid scenarios"
+        - consistency_checks: "2-3 similar input variations"
+        - constraint_stress: "2-3 extreme limit tests"
+        
+    - name: results
+      content:
+        primary_metrics:
+          - overall_score: "Robustness score 0-100"
+          - grade_classification: "S/A/B/C/D/F tier based on score"
+          - percentile_ranking: "How user compares to others"
+        detailed_breakdown:
+          - consistency: "30% - Stable outputs across variations"
+          - output_quality: "25% - Technical accuracy and coherence"
+          - robustness: "25% - How well it handles unseen cases"
+          - creativity: "10% - Novel solutions within constraints"
+          - brevity: "10% - Concise, efficient communication"
+        per_test_analysis:
+          - test_case_display: "Input → Expected → Actual → Pass/Fail"
+          - failure_explanation: "Why it failed and how to fix"
+          - improvement_suggestions: "Specific actionable feedback"
+        rewards_and_progress:
+          - xp_earned: "Based on score and difficulty"
+          - coins_awarded: "Currency for platform features"
+          - leaderboard_position: "Current ranking on challenge"
+          - unlock_achievements: "Badges and milestones"
+        next_steps:
+          - publish_option: "Share mini-model with community"
+          - retry_challenge: "Attempt again with new strategy"
+          - explore_similar: "Discover related challenges"
+          - advanced_mode: "Unlock harder variants"
+
+tech_stack:
+  llm:
+    approach: in_house_single_model
+    recommendation: Qwen/Qwen2.5-32B-Instruct (4-bit quantized)
+    alternatives:
+      - mistralai/Mistral-Small-3.2-24B-Instruct
+      - meta-llama/Llama-3.3-70B-Instruct (if more VRAM)
+      - microsoft/Phi-3-medium-128k-instruct (cost-effective)
+    hosting:
+      primary: "vLLM + FastAPI (production)"
+      development: "Ollama (local testing)"
+      fallback: "llama.cpp (CPU-only)"
+      cloud_options:
+        - aws_bedrock: "Managed inference with auto-scaling"
+        - azure_openai: "Enterprise reliability"
+        - gcp_vertex: "Custom model deployment"
+    inference_settings:
+      training_phase:
+        temperature: 0.7
+        max_tokens: 800
+        top_p: 0.9
+        repetition_penalty: 1.1
+      stress_test_phase:
+        temperature: 0.2
+        max_tokens: 600
+        top_p: 0.8
+        repetition_penalty: 1.05
+      optimization:
+        - batch_processing: "Parallel test execution"
+        - response_caching: "Cache identical test cases"
+        - model_warm_up: "Pre-load model for latency"
+        - auto_scaling: "Scale based on concurrent users"
+  database:
+    primary: "PostgreSQL 15+ with pgvector"
+    replication: "Primary-replica setup for read scaling"
+    backup_strategy: "Daily snapshots + point-in-time recovery"
+    connection_pooling: "PgBouncer for high concurrency"
+    monitoring: "Prometheus + Grafana dashboards"
+  features_to_build:
+    core_functionality:
+      - real_time_word_counter: "Live character/word counting with visual feedback"
+      - auto_prompt_extraction: "AI-powered final system prompt identification"
+      - batch_stress_test_runner: "Parallel test execution with progress tracking"
+      - mini_model_publishing: "Community sharing and discovery system"
+    user_experience:
+      - responsive_design: "Mobile-first, tablet-optimized"
+      - offline_mode: "Cached challenges for poor connectivity"
+      - accessibility: "WCAG 2.1 AA compliance"
+      - internationalization: "Multi-language support (EN, ES, FR, DE)"
+    performance:
+      - lazy_loading: "Progressive content loading"
+      - service_workers: "Offline caching and background sync"
+      - cdn_integration: "Global content delivery"
+      - image_optimization: "WebP format with fallbacks"
+    analytics:
+      - user_behavior_tracking: "Anonymous usage patterns"
+      - performance_metrics: "Response times and error rates"
+      - a_b_testing: "Feature rollout experiments"
+      - funnel_analysis: "Conversion and retention tracking"
+
+challenge_schema:
+  id: string                     # Unique identifier (slug format)
+  title: string                   # Human-readable name
+  role: string                    # e.g. "Savage but Professional Code Reviewer"
+  difficulty: [beginner, intermediate, advanced]
+  description: string             # What the user will learn/accomplish
+  estimated_time: integer         # Minutes to complete (15-45)
+  prerequisites: [string]         # Required skills/concepts
+  learning_objectives: [string]   # Specific outcomes
+  
+  training:
+    rounds: integer                # Usually 4-5
+    max_words_per_prompt: integer  # Constraint for user input
+    time_per_round: integer        # Seconds per round (180-360)
+    constraints:
+      required: [string]           # Must include these elements
+      forbidden: [string]          # Must avoid these elements
+      optional: [string]            # Bonus points for inclusion
+    progressive_difficulty:
+      round_1: "Basic constraints"
+      round_2: "Add complexity"
+      round_3: "Introduce edge cases"
+      round_4: "Combine multiple constraints"
+      round_5: "Final stress test preparation"
+      
+  stress_test:
+    num_cases: integer             # 5-7 depending on complexity
+    test_types:
+      - adversarial: "Malicious inputs, boundary testing"
+      - edge_case: "Unusual but valid scenarios"
+      - contradictory: "Conflicting requirements"
+      - extreme_constraint: "Tight limits on format/length"
+      - out_of_distribution: "Unexpected input types"
+      - safety_critical: "Ethical/harmful content handling"
+    test_cases:
+      input_template: string       # Variable substitution pattern
+      expected_behavior: string    # What good output looks like
+      failure_conditions: [string] # What constitutes failure
+      weight: float               # Importance multiplier (0.5-2.0)
+    execution:
+      parallel: true              # Run tests concurrently
+      timeout_per_test: 30        # Seconds before failure
+      retry_logic: "exponential_backoff"
+      
+  scoring:
+    total_score: 100
+    passing_score: 70             # Minimum to earn XP
+    breakdown:
+      consistency: 30             # Stable outputs across variations
+      output_quality: 25          # Technical accuracy and coherence
+      robustness: 25              # Handle unseen cases
+      creativity: 10              # Novel solutions within constraints
+      brevity: 10                 # Concise, efficient communication
+    bonus_criteria:
+      perfect_score: +10          # 100/100 gets bonus
+      speed_bonus: +5             # Complete under time limit
+      creativity_bonus: +5        # Exceptionally novel approach
+      consistency_bonus: +10       # Zero variance across tests
+      
+  rewards:
+    base_xp: integer              # Based on difficulty (50-80)
+    base_coins: integer            # Currency reward (8-18)
+    completion_bonus:
+      high_robustness: integer    # Extra XP for scores > 85
+      perfect_run: integer        # Bonus for 100% score
+      speed_demon: integer         # Fast completion bonus
+    leaderboards:
+      daily: true                  # Daily rankings
+      weekly: true                 # Weekly competitions
+      all_time: true               # Historical bests
+      
+  metadata:
+    tags: [string]                # For discovery and filtering
+    category: string              # Broad skill area
+    creator: string               # Challenge author
+    version: string               # For iterative improvements
+    difficulty_rating: float      # Community difficulty rating
+    completion_rate: float        # Success rate analytics
+
+example_challenges:
+
+  - id: train-savage-reviewer-001
+    title: "Savage Code Reviewer"
+    role: "Brutally honest but professional code reviewer"
+    difficulty: intermediate
+    description: "Train a mini-AI that gives funny yet technically accurate code reviews."
+    training:
+      rounds: 5
+      max_words_per_prompt: 40
+      constraints:
+        required: ["mention at least 2 real technical issues", "stay funny"]
+        forbidden: ["profanity", "personal attacks"]
+    stress_test:
+      num_cases: 6
+      test_types: [adversarial, edge_case, contradictory, extreme_constraint]
+    rewards:
+      xp: 65
+      coins: 12
+
+  - id: train-breakup-advisor-001
+    title: "Emotional Breakup Advisor"
+    role: "Empathetic but honest relationship advisor"
+    difficulty: intermediate
+    description: "Train a mini-AI that helps people write kind but clear breakup messages or advice."
+    training:
+      rounds: 4
+      max_words_per_prompt: 30
+    stress_test:
+      num_cases: 7
+      test_types: [adversarial, contradictory, safety_critical]
+    rewards:
+      xp: 60
+      coins: 10
+
+  - id: train-spec-writer-001
+    title: "Chaos Ticket → Bulletproof Spec"
+    role: "Senior Product Engineer"
+    difficulty: advanced
+    description: "Train a mini-AI that turns vague, messy tickets into clean, complete specifications."
+    training:
+      rounds: 5
+      max_words_per_prompt: 45
+    stress_test:
+      num_cases: 6
+      test_types: [contradictory, edge_case, out_of_distribution]
+    rewards:
+      xp: 80
+      coins: 18
+
+  - id: train-useless-superpower-001
+    title: "Useless Superpower Storyteller"
+    role: "Master of Absurd Origin Stories"
+    difficulty: beginner
+    description: "Train a mini-AI that turns ridiculous superpowers into compelling character backstories."
+    training:
+      rounds: 4
+      max_words_per_prompt: 40
+    stress_test:
+      num_cases: 5
+      test_types: [adversarial, extreme_constraint]
+    rewards:
+      xp: 50
+      coins: 8
+
+  - id: train-meme-lord-001
+    title: "Viral Thread Engineer"
+    role: "Meme-to-Viral Thread Converter"
+    difficulty: intermediate
+    description: "Train a mini-AI that turns boring facts into highly shareable Twitter/X threads."
+    training:
+      rounds: 5
+      max_words_per_prompt: 35
+    stress_test:
+      num_cases: 6
+    rewards:
+      xp: 55
+      coins: 10
+
+scoring_rules:
+  robustness_score: >
+    Average performance across all stress test cases.
+    Bonus for handling contradictory or extreme inputs without breaking character.
+
+production_readiness:
+  deployment:
+    environment: "Production-ready with monitoring"
+    scalability: "Horizontal scaling with load balancers"
+    reliability: "99.9% uptime SLA with auto-failover"
+    security: "SOC2 compliance, encryption at rest and transit"
+  monitoring:
+    application_metrics: "Prometheus + Grafana dashboards"
+    error_tracking: "Sentry for real-time error monitoring"
+    performance_monitoring: "New Relic APM for response times"
+    log_aggregation: "ELK stack for centralized logging"
+    uptime_monitoring: "Pingdom + custom health checks"
+  infrastructure:
+    container_orchestration: "Kubernetes with auto-scaling"
+    database_replication: "Primary-replica with automatic failover"
+    cdn_integration: "CloudFlare for global content delivery"
+    backup_strategy: "Automated daily backups with 30-day retention"
+    disaster_recovery: "Multi-region deployment with DR plan"
+  quality_assurance:
+    automated_testing: "CI/CD pipeline with comprehensive test suite"
+    load_testing: "K6 performance tests for peak traffic simulation"
+    security_scanning: "OWASP ZAP + dependency vulnerability scanning"
+    code_quality: "SonarQube with coverage thresholds"
+    manual_testing: "Quarterly penetration testing and audits"
+  compliance:
+    data_privacy: "GDPR and CCPA compliance"
+    accessibility: "WCAG 2.1 AA certification"
+    performance: "Core Web Vitals within Google recommendations"
+    security: "Regular security audits and penetration testing"
+
+future_enhancements:
+  short_term (3 months):
+    - User-generated challenges: "Community content creation tools"
+    - Advanced analytics: "Detailed performance insights and recommendations"
+    - Social features: "Follow creators, share achievements, collaborative training"
+    - Mobile_app: "React Native iOS/Android applications"
+    - Gamification_2.0: "Streaks, achievements, seasonal events"
+  medium_term (6 months):
+    - Fine-tuning_integration: "Connect to custom fine-tuned models"
+    - Marketplace: "Buy/sell premium mini-models and prompt packs"
+    - Enterprise_features: "Team training, custom challenges, analytics"
+    - Voice_interface: "Voice input/output for accessibility"
+    - Ai_assistant: "Smart hints and personalized learning paths"
+  long_term (12 months):
+    - Multi_modal_training: "Image, audio, and video processing challenges"
+    - Real_world_integration: "Connect to external APIs and services"
+    - Advanced_ai_models: "Integration with GPT-4, Claude, and other frontier models"
+    - Educational_certification: "Verified skill assessments and certificates"
+    - Open_source_platform: "Self-hosted version for organizations"
+  research_directions:
+    - prompt_engineering_research: "Contribute to academic prompt engineering studies"
+    - ai_safety: "Develop safer AI interaction patterns"
+    - educational_effectiveness: "Measure learning outcomes and retention"
+    - human_ai_collaboration: "Study optimal human-AI teamwork patterns"

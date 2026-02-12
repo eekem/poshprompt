@@ -6,7 +6,6 @@ import { useAuth } from "@/app/lib/use-auth";
 import Modal from "@/components/Modal";
 import BottomSheet from "@/components/BottomSheet";
 import TopUpModal from "@/components/TopUpModal";
-import Leaderboard from "@/components/Leaderboard";
 import "./globals.css";
 
 interface Message {
@@ -16,13 +15,15 @@ interface Message {
   timestamp: string;
   score?: number;
   breakdown?: {
-    constraint_accuracy: number;
-    clarity: number;
+    consistency: number;
+    output_quality: number;
+    robustness: number;
     creativity: number;
     brevity: number;
-    improvement_per_turn?: number;
-    correctness?: number;
-    explanation_quality?: number;
+    methodical_approach?: number;
+    voice_preservation?: number;
+    empathy?: number;
+    completeness?: number;
   };
 }
 
@@ -30,7 +31,7 @@ interface Challenge {
   id: string;
   title: string;
   description: string;
-  gameType: "image" | "text" | "transformation" | "refinement" | "evaluation";
+  gameType: "mini_model_training" | "image" | "text" | "transformation" | "refinement" | "evaluation";
   difficulty: "beginner" | "intermediate" | "advanced";
   task: {
     objective: string;
@@ -48,8 +49,18 @@ interface Challenge {
   };
   scoring: {
     totalScore: number;
+    passingScore: number;
     breakdown: any;
   };
+  rewards: {
+    base_xp: number;
+    base_coins: number;
+    completion_bonus?: any;
+  };
+  isFeatured: boolean;
+  estimatedTime?: number;
+  prerequisites?: string[];
+  learningObjectives?: string[];
 }
 
 interface ChatResponse {
@@ -58,18 +69,44 @@ interface ChatResponse {
   output: string;
   score_text: string;
   breakdown: {
-    constraint_accuracy: number;
-    clarity: number;
+    consistency: number;
+    output_quality: number;
+    robustness: number;
     creativity: number;
     brevity: number;
-    improvement_per_turn?: number;
-    correctness?: number;
-    explanation_quality?: number;
   };
   turnNumber: number;
   totalScore: number;
   earnedXp: number;
   remainingPrompts: number;
+  phase?: 'training' | 'stress_test' | 'results';
+  canProceedToStressTest?: boolean;
+  trainingComplete?: boolean;
+}
+
+interface StressTestResponse {
+  chatId: string;
+  miniModelId: string;
+  overallScore: number;
+  robustnessScore: number;
+  grade: string; // S/A/B/C/D/F
+  tier: string; // Platinum, Gold, Silver, Bronze
+  percentile: number; // 0.0 - 1.0
+  isRewardEligible: boolean;
+  rewardZoneMessage: string;
+  results: Array<{
+    testCaseId: string;
+    input: string;
+    output: string;
+    score: number;
+    passed: boolean;
+    breakdown: any;
+    explanation: string;
+  }>;
+  totalXp: number;
+  coinsEarned: number;
+  achievements: string[];
+  canPublish: boolean;
 }
 
 export default function ChallengePage() {
@@ -82,7 +119,7 @@ export default function ChallengePage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(299); // 4:59 in seconds
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [currentTurn, setCurrentTurn] = useState(1);
   const [previousOutputs, setPreviousOutputs] = useState<string[]>([]);
   const [wordCount, setWordCount] = useState(0);
@@ -90,11 +127,12 @@ export default function ChallengePage() {
   const [totalScore, setTotalScore] = useState(0);
   const [earnedXp, setEarnedXp] = useState(0);
   const [remainingPrompts, setRemainingPrompts] = useState(0);
-  const [userRank, setUserRank] = useState<number | null>(null);
-  const [userPrize, setUserPrize] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [currentPhase, setCurrentPhase] = useState<'training' | 'stress_test' | 'results'>('training');
+  const [trainingComplete, setTrainingComplete] = useState(false);
+  const [canProceedToStressTest, setCanProceedToStressTest] = useState(false);
+  const [stressTestResults, setStressTestResults] = useState<StressTestResponse | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -133,38 +171,36 @@ export default function ChallengePage() {
         console.error("Error fetching challenges:", error);
       }
 
-      // Mock challenge data - in real app, fetch from API
-      const mockChallenge: Challenge = {
-        id: challengeId,
-        title: "Tweet Storm Generator",
-        description: "Generate a thread of 5 tweets about the future of crypto",
-        gameType: "text",
-        difficulty: "intermediate",
-        task: {
-          objective: "Generate a 5-tweet thread from a paragraph",
-          constraints: {
-            required: ["all main points covered", "5 tweets exactly"],
-            forbidden: ["blockchain", "grammar errors"],
-            optional: ["humor or emojis"],
-          },
-        },
-        gameplay: {
-          turnBased: false,
-          timeLimitSeconds: 300,
-          scoringMode: "quality_score",
-        },
-        scoring: {
-          totalScore: 100,
-          breakdown: {
-            constraint_accuracy: 40,
-            clarity: 30,
-            creativity: 20,
-            brevity: 10,
-          },
-        },
-      };
-
-      setChallenge(mockChallenge);
+      // Fetch challenge data from API
+      try {
+        const challengeResponse = await fetch(`/api/challenges/${challengeId}`);
+        if (challengeResponse.ok) {
+          const challengeData = await challengeResponse.json();
+          if (challengeData.success) {
+            setChallenge(challengeData.challenge);
+            
+            // Initialize timer for training challenges
+            if (challengeData.challenge.gameplay.turnBased) {
+              setTimeRemaining(challengeData.challenge.gameplay.timeLimitSeconds);
+            }
+          } else {
+            throw new Error(challengeData.error || "Failed to load challenge");
+          }
+        } else {
+          throw new Error("Failed to fetch challenge");
+        }
+      } catch (error) {
+        console.error("Error fetching challenge:", error);
+        // Set error state
+        const errorMessage: Message = {
+          id: "error-challenge-load",
+          type: "system",
+          content: "Failed to load challenge. Please refresh the page.",
+          timestamp: new Date().toISOString()
+        };
+        setMessages([errorMessage]);
+        return;
+      }
 
       // Try to fetch previous chat messages for this user and challenge
       try {
@@ -210,17 +246,19 @@ export default function ChallengePage() {
       }
 
       // If no previous messages or error, create initial system message
-      const systemMessage: Message = {
-        id: "system-1",
-        type: "system",
-        content: `Welcome to the arena. Your goal: ${mockChallenge.task.objective}.\n\nConstraints:\n${mockChallenge.task.constraints.required.map((c) => `• ${c}`).join("\n")}\n${mockChallenge.task.constraints.forbidden.length > 0 ? `\nForbidden:\n${mockChallenge.task.constraints.forbidden.map((c) => `• ${c}`).join("\n")}` : ""}`,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
+      if (challenge) {
+        const systemMessage: Message = {
+          id: "system-1",
+          type: "system",
+          content: `Welcome to ${challenge.title} training session!\n\n**Your Role:** AI Trainer\n**AI's Role:** Your Trainee\n\n**Training Objective:** ${challenge.task.objective}\n\n**Training Guidelines:**\n${challenge.task.constraints.required.map((c) => `• ${c}`).join("\n")}\n${challenge.task.constraints.forbidden.length > 0 ? `\n**Avoid These Behaviors:**\n${challenge.task.constraints.forbidden.map((c) => `• ${c}`).join("\n")}` : ""}\n${challenge.task.constraints.optional.length > 0 ? `\n**Optional Enhancements:**\n${challenge.task.constraints.optional.map((c) => `• ${c}`).join("\n")}` : ""}\n\n${challenge.gameplay.turnBased ? `You have ${Math.floor(challenge.gameplay.timeLimitSeconds / 60)}:${(challenge.gameplay.timeLimitSeconds % 60).toString().padStart(2, '0')} to complete this training round. Each round builds on previous context to create a consistent AI persona.` : ""}\n\n**Remember:** You're teaching through prompt engineering. Each response helps build the AI's context for consistent behavior.`,
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
 
-      setMessages([systemMessage]);
+        setMessages([systemMessage]);
+      }
     };
 
     if (user && challengeId) {
@@ -230,15 +268,17 @@ export default function ChallengePage() {
 
   // Timer countdown
   useEffect(() => {
-    if (timeRemaining > 0 && !isLoading) {
+    if (timeRemaining > 0 && !isLoading && currentPhase === 'training') {
       const timer = setTimeout(() => {
         setTimeRemaining(timeRemaining - 1);
       }, 1000);
       return () => clearTimeout(timer);
+    } else if (timeRemaining === 0 && currentPhase === 'training') {
+      handleSubmit(); // Auto-submit when time runs out
     }
-  }, [timeRemaining, isLoading]);
+  }, [timeRemaining, isLoading, currentPhase]);
 
-  // Auto-scroll to bottom
+  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -302,6 +342,40 @@ export default function ChallengePage() {
     }
   };
 
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case "Platinum":
+        return "text-purple-400 bg-purple-900/30 border-purple-700";
+      case "Gold":
+        return "text-yellow-400 bg-yellow-900/30 border-yellow-700";
+      case "Silver":
+        return "text-gray-300 bg-gray-700/30 border-gray-600";
+      case "Bronze":
+        return "text-orange-400 bg-orange-900/30 border-orange-700";
+      default:
+        return "text-gray-400 bg-gray-800/30 border-gray-600";
+    }
+  };
+
+  const getGradeColor = (grade: string) => {
+    switch (grade) {
+      case "S":
+        return "text-purple-400";
+      case "A":
+        return "text-green-400";
+      case "B":
+        return "text-blue-400";
+      case "C":
+        return "text-yellow-400";
+      case "D":
+        return "text-orange-400";
+      case "F":
+        return "text-red-400";
+      default:
+        return "text-gray-400";
+    }
+  };
+
   const handleSubmit = async () => {
     if (!input.trim() || isLoading || !challenge) return;
 
@@ -329,54 +403,65 @@ export default function ChallengePage() {
           userId: user.id,
           challengeId,
           prompt: input,
-          chatId: chatId || undefined, // Send chatId if it exists
+          chatId: chatId || undefined,
           turnNumber: currentTurn,
-          previousOutputs: previousOutputs,
+          previousOutputs,
+          phase: currentPhase
         }),
       });
 
+      const data: ChatResponse | { error: string } = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to submit prompt");
+        throw new Error((data as { error: string }).error || "Failed to submit prompt");
       }
 
-      const result: ChatResponse = await response.json();
+      const chatData = data as ChatResponse;
 
       // Update chat state
       if (!chatId) {
-        setChatId(result.chatId); // Set chatId for first interaction
+        setChatId(chatData.chatId);
       }
 
       const aiMessage: Message = {
-        id: result.messageId,
+        id: chatData.messageId,
         type: "ai",
-        content: result.output,
+        content: chatData.output,
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        score: result.score_text
-          ? parseInt(result.score_text.match(/(\d+)\/\d+/)?.[1] || "0")
-          : undefined,
-        breakdown: result.breakdown,
+        score: chatData.turnNumber > 0 ? Math.round((chatData.breakdown.consistency + chatData.breakdown.output_quality + chatData.breakdown.robustness + chatData.breakdown.creativity + chatData.breakdown.brevity) / 5) : undefined,
+        breakdown: chatData.breakdown,
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-      setPreviousOutputs((prev) => [...prev, result.output]);
-      setTotalScore(result.totalScore);
-      setEarnedXp(result.earnedXp);
-      setRemainingPrompts(result.remainingPrompts);
+      setPreviousOutputs((prev) => [...prev, chatData.output]);
+      setTotalScore(chatData.totalScore);
+      setEarnedXp(chatData.earnedXp);
+      setRemainingPrompts(chatData.remainingPrompts);
 
       if (challenge.gameplay.turnBased) {
-        setCurrentTurn(result.turnNumber + 1);
+        setCurrentTurn(chatData.turnNumber + 1);
       }
+
+      // Handle phase transitions
+      setTrainingComplete(chatData.trainingComplete || false);
+      setCanProceedToStressTest(chatData.canProceedToStressTest || false);
+      setCurrentPhase(chatData.phase || 'training');
+
+      // Reset timer for next turn if still in training
+      if (chatData.phase === 'training' && !chatData.trainingComplete) {
+        setTimeRemaining(challenge.gameplay.timeLimitSeconds);
+      }
+
     } catch (error) {
       console.error("Error submitting prompt:", error);
       // Add error message
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         type: "system",
-        content:
-          "Sorry, there was an error processing your request. Please try again.",
+        content: `Error: ${error instanceof Error ? error.message : "Failed to submit prompt"}`,
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -388,16 +473,87 @@ export default function ChallengePage() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+  const handleTopUpComplete = (additionalPrompts: number) => {
+    setRemainingPrompts(prev => prev + additionalPrompts);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
 
-  const handleTopUpComplete = (additionalPrompts: number) => {
-    setRemainingPrompts(prev => prev + additionalPrompts);
+  const startStressTest = async () => {
+    if (!challenge || !chatId) return;
+
+    setIsLoading(true);
+    setCurrentPhase('stress_test');
+
+    try {
+      // Collect all training context
+      const trainingContext = messages
+        .filter(msg => msg.type === 'user' || msg.type === 'ai')
+        .map(msg => `${msg.type.toUpperCase()}: ${msg.content}`);
+
+      const systemPrompt = `You are ${challenge.task.objective}. Follow these constraints:\nRequired: ${challenge.task.constraints.required.join(', ')}\nForbidden: ${challenge.task.constraints.forbidden.join(', ')}`;
+
+      const response = await fetch("/api/run_challenge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          chatId: chatId,
+          phase: 'stress_test',
+          systemPrompt,
+          finalContext: trainingContext
+        }),
+      });
+
+      const data: StressTestResponse | { error: string } = await response.json();
+
+      if (!response.ok) {
+        throw new Error((data as { error: string }).error || "Failed to run stress test");
+      }
+
+      const stressData = data as StressTestResponse;
+
+      setStressTestResults(stressData);
+      setCurrentPhase('results');
+      setEarnedXp(prev => prev + stressData.totalXp);
+
+      // Add results message
+      const resultsMessage: Message = {
+        id: Date.now().toString(),
+        type: "system",
+        content: `## 🎓 Training Evaluation Complete!\n\n**Your AI Trainee Performance:**\n• Overall Score: ${stressData.overallScore}/100\n• Grade: ${stressData.grade}\n• Tier Placement: ${stressData.tier}\n• Percentile: ${Math.round(stressData.percentile * 100)}th percentile\n• Robustness Score: ${stressData.robustnessScore}/100\n\n**Reward Zone Status:** ${stressData.rewardZoneMessage}\n\n**Achievements Unlocked:**\n${stressData.achievements.length > 0 ? stressData.achievements.map(a => `• ${a}`).join('\n') : '• None yet. Keep training!'}\n\n**Training Rewards Earned:**\n• Certification Points: ${stressData.totalXp}\n• Performance Tokens: ${stressData.coinsEarned}\n\n${stressData.canPublish ? '🎉 Excellent! Your trained AI is ready to share with the community!' : '💪 Continue training to improve your AI\'s consistency and robustness.'}\n\n**What Happened:** Your accumulated training context was tested against adversarial scenarios. The AI maintained its trained behavior based on how well you taught it through prompt engineering.`,
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, resultsMessage]);
+
+    } catch (error) {
+      console.error("Error running stress test:", error);
+      setCurrentPhase('training');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background-dark">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render if user is not authenticated
+  if (!user) {
+    return null;
+  }
 
   if (!challenge) {
     return (
@@ -440,7 +596,7 @@ export default function ChallengePage() {
           <div className="flex gap-3 items-center">
             <div className="bg-primary rounded-full w-8 h-8 flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-black text-xl font-bold">
-                terminal
+                school
               </span>
             </div>
             <div>
@@ -448,7 +604,7 @@ export default function ChallengePage() {
                 POSHPROMPT
               </h1>
               <p className="text-gold-accent text-xs tracking-wider uppercase opacity-80">
-                Challenge Arena
+                AI Training Arena
               </p>
             </div>
           </div>
@@ -566,7 +722,7 @@ export default function ChallengePage() {
                 {user.name || "Anonymous User"}
               </span>
               <span className="text-xs text-gold-accent">
-                Rank: Prompt Engineer
+                Elite Trainer
               </span>
             </div>
             <button className="ml-auto text-gray-400 hover:text-white">
@@ -578,21 +734,6 @@ export default function ChallengePage() {
 
       {/* Main Content Arena */}
       <main className="flex-1 flex flex-col h-full bg-background-dark relative lg:ml-0">
-        {/* Floating Leaderboard Button */}
-        <button
-          onClick={() => setIsLeaderboardOpen(!isLeaderboardOpen)}
-          className="fixed right-4 top-24 z-30 bg-primary hover:bg-yellow-500 text-black p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
-          title="Toggle Leaderboard"
-        >
-          <span className="material-symbols-outlined text-xl">
-            emoji_events
-          </span>
-          {userRank && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-background-dark">
-              {userRank}
-            </span>
-          )}
-        </button>
         {/* Main Header */}
         <header className="h-16 border-b border-[#332a1e] flex items-center justify-between px-4 lg:px-8 bg-sidebar-dark/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center gap-2 lg:gap-4 min-w-0 pl-15">
@@ -611,7 +752,7 @@ export default function ChallengePage() {
             <div className="flex items-center gap-4">
               <div className="flex flex-col items-center">
                 <span className="text-[10px] text-gray-400 uppercase tracking-widest">
-                  Total Score
+                  Model Performance
                 </span>
                 <div className="flex items-center gap-2 text-primary font-mono text-lg font-bold">
                   <span className="material-symbols-outlined text-base">
@@ -623,7 +764,7 @@ export default function ChallengePage() {
               <div className="h-6 w-px bg-[#332a1e]"></div>
               <div className="flex flex-col items-center">
                 <span className="text-[10px] text-gray-400 uppercase tracking-widest">
-                  XP Earned
+                  Certification
                 </span>
                 <div className="flex items-center gap-2 text-gold-accent font-mono text-lg font-bold">
                   <span className="material-symbols-outlined text-base">
@@ -644,22 +785,6 @@ export default function ChallengePage() {
                   {remainingPrompts}
                 </div>
               </div>
-              {userRank && (
-                <>
-                  <div className="h-6 w-px bg-[#332a1e]"></div>
-                  <div className="flex flex-col items-center">
-                    <span className="text-[10px] text-gray-400 uppercase tracking-widest">
-                      Rank
-                    </span>
-                    <div className="flex items-center gap-2 text-yellow-400 font-mono text-lg font-bold">
-                      <span className="material-symbols-outlined text-base">
-                        emoji_events
-                      </span>
-                      #{userRank}
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
             <div className="h-8 w-px bg-[#332a1e]"></div>
             <div className="flex flex-col items-end">
@@ -679,7 +804,7 @@ export default function ChallengePage() {
               className="bg-primary hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-transform active:scale-95 shadow-[0_0_15px_rgba(245,159,10,0.3)]"
             >
               <span className="material-symbols-outlined text-lg">add</span>
-              <span>Top Up</span>
+              <span>Add Tokens</span>
             </button>
           </div>
         </header>
@@ -709,7 +834,7 @@ export default function ChallengePage() {
               className="bg-primary hover:bg-yellow-500 text-black font-bold py-1 px-3 rounded-lg flex items-center gap-1 transition-transform active:scale-95 shadow-[0_0_15px_rgba(245,159,10,0.3)]"
             >
               <span className="material-symbols-outlined text-sm">add</span>
-              <span>Top Up</span>
+              <span>Add Tokens</span>
             </button>
           </div>
         </div>
@@ -831,78 +956,191 @@ export default function ChallengePage() {
         {/* Input Area (Sticky Bottom) */}
         <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 lg:p-8 bg-linear-to-t from-background-dark via-background-dark to-transparent">
           <div className="max-w-4xl lg:max-w-4xl mx-auto w-full relative">
-            {/* Input Container */}
-            <div className="bg-surface-dark border border-[#493b22] rounded-xl shadow-2xl shadow-black/50 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-300">
-              {/* Text Area */}
-              <textarea
-                ref={textareaRef}
-                className="w-full bg-transparent text-white p-2 sm:p-3 lg:p-4 h-16 sm:h-20 lg:h-24 resize-none border-none focus:ring-0 placeholder-gray-600 font-display text-sm sm:text-base lg:text-lg leading-relaxed outline-0"
-                placeholder="Enter your prompt draft here..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={isLoading}
-                maxLength={200}
-              />
+            {/* Training Complete - Stress Test Prompt */}
+            {trainingComplete && currentPhase === 'training' && (
+              <div className="bg-surface-dark border border-[#493b22] rounded-xl shadow-2xl shadow-black/50 overflow-hidden p-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-green-400 mb-2">Training Complete!</h3>
+                  <p className="text-gray-300 mb-4">
+                    Your final score: {totalScore}/100 • Earned: {earnedXp} XP
+                  </p>
+                  {canProceedToStressTest ? (
+                    <button
+                      onClick={startStressTest}
+                      disabled={isLoading}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg disabled:opacity-50 transition-colors"
+                    >
+                      {isLoading ? "Running Tests..." : "Start Stress Test"}
+                    </button>
+                  ) : (
+                    <p className="text-red-400">Score too low to proceed to stress test. Minimum: {challenge.scoring.passingScore}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
-              {/* Toolbar & Footer - Mobile Responsive */}
-              <div className="px-2 sm:px-3 lg:px-4 py-1 sm:py-2 lg:py-3 bg-[#1e1912] border-t border-[#332a1e] flex justify-between items-center">
-                {/* Tools/Counter - Mobile Responsive */}
-                <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
-                  <span className="text-[10px] sm:text-xs font-mono text-gray-400 flex items-center gap-1 sm:gap-2">
-                    <span className="material-symbols-outlined text-sm sm:text-base lg:text-base">
-                      text_fields
-                    </span>
-                    <span className="text-[10px] sm:text-xs">
-                      {wordCount} <span className="text-gray-600">/ 200</span>
-                    </span>
-                  </span>
+            {/* Stress Test Running */}
+            {currentPhase === 'stress_test' && (
+              <div className="bg-surface-dark border border-[#493b22] rounded-xl shadow-2xl shadow-black/50 overflow-hidden p-6">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <p className="text-blue-400">Running stress tests...</p>
+                  <p className="text-gray-400 text-sm">Testing your mini-model with hidden adversarial cases</p>
+                </div>
+              </div>
+            )}
 
-                  {/* Desktop Tools - Hidden on Small Mobile */}
-                  <div className="hidden sm:flex h-3 sm:h-4 lg:h-4 w-px bg-[#332a1e]"></div>
-                  <button
-                    className="hidden sm:flex text-gray-500 hover:text-primary transition-colors"
-                    title="Optimize"
-                  >
-                    <span className="material-symbols-outlined text-base sm:text-lg lg:text-xl">
-                      auto_fix_high
+            {/* Stress Test Results */}
+            {currentPhase === 'results' && stressTestResults && (
+              <div className="bg-surface-dark border border-[#493b22] rounded-xl shadow-2xl shadow-black/50 overflow-hidden p-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold mb-4">
+                    <span className={getGradeColor(stressTestResults.grade)}>
+                      Grade: {stressTestResults.grade}
                     </span>
-                  </button>
-                  <div className="hidden sm:flex h-3 sm:h-4 lg:h-4 w-px bg-[#332a1e]"></div>
-                  <button
-                    className="hidden sm:flex text-gray-500 hover:text-white transition-colors"
-                    title="History"
-                  >
-                    <span className="material-symbols-outlined text-base sm:text-lg lg:text-xl">
-                      history
-                    </span>
-                  </button>
+                  </h3>
+                  <div className="flex justify-center gap-8 mb-4">
+                    <div className="bg-gray-800 rounded-lg p-4 text-center">
+                      <div className="text-3xl font-bold text-white">
+                        {stressTestResults.overallScore}
+                      </div>
+                      <div className="text-sm text-gray-400 mt-1">Overall Score</div>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-4 text-center">
+                      <div className="text-3xl font-bold text-white">
+                        {stressTestResults.robustnessScore}
+                      </div>
+                      <div className="text-sm text-gray-400 mt-1">Robustness Score</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center gap-8 mb-4">
+                    <div className="bg-gray-800 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-yellow-400">
+                        +{stressTestResults.totalXp}
+                      </div>
+                      <div className="text-sm text-gray-400 mt-1">XP Earned</div>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-amber-400">
+                        +{stressTestResults.coinsEarned}
+                      </div>
+                      <div className="text-sm text-gray-400 mt-1">Coins Earned</div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Submit Action - Mobile Responsive */}
-                <button
-                  onClick={handleSubmit}
-                  disabled={!input.trim() || isLoading}
-                  className="bg-primary hover:bg-yellow-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-bold py-1 sm:py-2 lg:py-2 px-2 sm:px-3 lg:px-6 rounded-lg flex items-center gap-1 sm:gap-2 transition-transform active:scale-95 shadow-[0_0_15px_rgba(245,159,10,0.3)] text-xs sm:text-sm lg:text-base"
-                >
-                  <span className="text-xs sm:text-sm">
-                    {isLoading ? "Processing..." : "Submit"}
-                  </span>
-                  <span className="material-symbols-outlined text-sm sm:text-base lg:text-lg">
-                    send
-                  </span>
-                </button>
-              </div>
-            </div>
+                {/* Achievements */}
+                {stressTestResults.achievements.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold text-white mb-3">Achievements</h4>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {stressTestResults.achievements.map((achievement, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-purple-900 text-purple-300 text-xs font-medium rounded-full"
+                        >
+                          🏆 {achievement}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {/* Helper Text - Mobile Responsive */}
-            <div className="text-center mt-1 sm:mt-2 lg:mt-3">
-              <p className="text-[10px] text-gray-600 uppercase tracking-widest">
-                Press{" "}
-                <span className="text-gray-400 font-bold">Cmd + Enter</span> to
-                submit
-              </p>
-            </div>
+                {/* Action Buttons */}
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg"
+                  >
+                    Try Again
+                  </button>
+                  {stressTestResults.canPublish && (
+                    <button
+                      className="px-6 py-3 bg-primary hover:bg-yellow-500 text-white font-medium rounded-lg"
+                    >
+                      Publish Mini-Model
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Regular Input Area - Only show during training */}
+            {currentPhase === 'training' && !trainingComplete && (
+              <>
+                <div className="bg-surface-dark border border-[#493b22] rounded-xl shadow-2xl shadow-black/50 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-300">
+                  {/* Text Area */}
+                  <textarea
+                    ref={textareaRef}
+                    className="w-full bg-transparent text-white p-2 sm:p-3 lg:p-4 h-16 sm:h-20 lg:h-24 resize-none border-none focus:ring-0 placeholder-gray-600 font-display text-sm sm:text-base lg:text-lg leading-relaxed outline-0"
+                    placeholder="Enter your prompt draft here..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={isLoading}
+                    maxLength={200}
+                  />
+
+                  {/* Toolbar & Footer - Mobile Responsive */}
+                  <div className="px-2 sm:px-3 lg:px-4 py-1 sm:py-2 lg:py-3 bg-[#1e1912] border-t border-[#332a1e] flex justify-between items-center">
+                    {/* Tools/Counter - Mobile Responsive */}
+                    <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
+                      <span className="text-[10px] sm:text-xs font-mono text-gray-400 flex items-center gap-1 sm:gap-2">
+                        <span className="material-symbols-outlined text-sm sm:text-base lg:text-base">
+                          text_fields
+                        </span>
+                        <span className="text-[10px] sm:text-xs">
+                          {wordCount} <span className="text-gray-600">/ 200</span>
+                        </span>
+                      </span>
+
+                      {/* Desktop Tools - Hidden on Small Mobile */}
+                      <div className="hidden sm:flex h-3 sm:h-4 lg:h-4 w-px bg-[#332a1e]"></div>
+                      <button
+                        className="hidden sm:flex text-gray-500 hover:text-primary transition-colors"
+                        title="Optimize"
+                      >
+                        <span className="material-symbols-outlined text-base sm:text-lg lg:text-xl">
+                          auto_fix_high
+                        </span>
+                      </button>
+                      <div className="hidden sm:flex h-3 sm:h-4 lg:h-4 w-px bg-[#332a1e]"></div>
+                      <button
+                        className="hidden sm:flex text-gray-500 hover:text-white transition-colors"
+                        title="History"
+                      >
+                        <span className="material-symbols-outlined text-base sm:text-lg lg:text-xl">
+                          history
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Submit Action - Mobile Responsive */}
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!input.trim() || isLoading}
+                      className="bg-primary hover:bg-yellow-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-bold py-1 sm:py-2 lg:py-2 px-2 sm:px-3 lg:px-6 rounded-lg flex items-center gap-1 sm:gap-2 transition-transform active:scale-95 shadow-[0_0_15px_rgba(245,159,10,0.3)] text-xs sm:text-sm lg:text-base"
+                    >
+                      <span className="text-xs sm:text-sm">
+                        {isLoading ? "Processing..." : "Submit"}
+                      </span>
+                      <span className="material-symbols-outlined text-sm sm:text-base lg:text-lg">
+                        send
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Helper Text - Mobile Responsive */}
+                <div className="text-center mt-1 sm:mt-2 lg:mt-3">
+                  <p className="text-[10px] text-gray-600 uppercase tracking-widest">
+                    Press{" "}
+                    <span className="text-gray-400 font-bold">Cmd + Enter</span> to
+                    submit
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </main>
@@ -936,45 +1174,6 @@ export default function ChallengePage() {
           />
         </BottomSheet>
       </div>
-
-      {/* Right Leaderboard Offcanvas */}
-      <div
-        className={`
-          fixed inset-y-0 right-0 w-80 bg-sidebar-dark border-l border-[#332a1e] shadow-2xl z-40 transform transition-transform duration-300 ease-in-out
-          ${isLeaderboardOpen ? 'translate-x-0' : 'translate-x-full'}
-        `}
-      >
-        {/* Offcanvas Header */}
-        <div className="p-6 border-b border-[#332a1e] flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary text-xl">
-              emoji_events
-            </span>
-            <h3 className="text-white text-lg font-bold tracking-tight">
-              Leaderboard
-            </h3>
-          </div>
-          <button
-            onClick={() => setIsLeaderboardOpen(false)}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        {/* Leaderboard Content */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <Leaderboard challengeId={challengeId} userId={user?.id} />
-        </div>
-      </div>
-
-      {/* Overlay for mobile */}
-      {isLeaderboardOpen && (
-        <div
-          onClick={() => setIsLeaderboardOpen(false)}
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
-        />
-      )}
     </div>
   );
 }

@@ -1,0 +1,108 @@
+# =============================================
+# PoshPrompt Evaluation & Reward System v2.1
+# Skill-Based, Non-Financialized Model Ranking
+# =============================================
+
+evaluation_system:
+  philosophy: >
+    Performance is skill-based and evaluation-driven.
+    Money is a reward for excellence, not the core mechanic.
+    Users compete on robustness, not speculation.
+
+  scoring:
+    total_score: 100
+    breakdown:
+      consistency: 30
+      output_quality: 25
+      robustness: 25
+      creativity: 10
+      brevity: 10
+
+  robustness_score:
+    description: >
+      Average performance across hidden stress test cases.
+      Bonus weighting applied for handling contradictory
+      and adversarial inputs without breaking character.
+
+ranking_model:
+  visibility: hidden
+  description: >
+    Leaderboard positions are calculated internally.
+    Users do not see numeric rank.
+    They see tier placement and reward eligibility instead.
+
+  tier_system:
+    type: percentile_based
+    tiers:
+      - name: Platinum
+        percentile: top_5_percent
+      - name: Gold
+        percentile: top_15_percent
+      - name: Silver
+        percentile: top_30_percent
+      - name: Bronze
+        percentile: all_completed_models
+
+  reward_zone:
+    description: >
+      Only models within a predefined internal threshold
+      (e.g., top N or top percentile) become reward eligible.
+    eligibility_logic:
+      type: top_n
+      value: 3   # configurable per challenge
+    display:
+      if_eligible: "🎉 Reward Eligible"
+      if_not_eligible: "Improve robustness to enter Reward Zone"
+
+result_screen:
+  show:
+    - robustness_score
+    - tier
+    - pass_fail_per_stress_case
+    - improvement_feedback
+  hide:
+    - exact_rank
+    - total_number_of_participants
+    - other_users_scores
+
+monetization_loop:
+  attempts_cost:
+    resource: prompts
+    description: >
+      Each stress test attempt consumes prompts.
+      Prompts are purchasable.
+  retry_policy:
+    best_score_counts_within_24h: true
+    optional_daily_attempt_limit: configurable
+
+prize_distribution:
+  type: fixed_pool
+  example:
+    total_pool: 80
+    distribution:
+      first: 40
+      second: 25
+      third: 15
+  payout_condition: >
+    User must be within reward eligibility tier at challenge end.
+
+ux_copy_guidelines:
+  avoid_terms:
+    - market_value
+    - trading
+    - asset
+    - investment
+    - speculation
+  emphasize_terms:
+    - robustness
+    - certification
+    - elite
+    - reward eligible
+    - model performance
+    - evaluation
+
+future_extension:
+  - global_model_rating_system   # Elo-style across challenges
+  - public_badges_profile_display
+  - weekly_gauntlet_hard_mode
+  - published_mini_model_gallery

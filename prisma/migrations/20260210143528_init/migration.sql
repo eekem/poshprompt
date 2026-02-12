@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "user" ADD COLUMN     "earnedBalance" DOUBLE PRECISION NOT NULL DEFAULT 0.0;

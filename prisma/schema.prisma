@@ -21,7 +21,7 @@ model User {
   banExpires      DateTime?
   username        String?           @unique
   displayUsername String?
-  prompts         Int               @default(100)
+  prompts         Int               @default(0)
   earnedBalance   Float             @default(0.0)
   earnedXps       Int               @default(0)
   accounts        Account[]
@@ -29,6 +29,8 @@ model User {
   payments        Payment[]
   sessions        Session[]
   fingerprints    UserFingerprint[]
+  miniModels      MiniModel[]
+  publications    MiniModelPublication[]
 
   @@map("user")
 }
@@ -107,7 +109,21 @@ model Challenge {
   updatedAt    DateTime @updatedAt
   maxXpPerTurn Int      @default(100)
   minScore     Int      @default(0)
+  isActive     Boolean  @default(true)
+  isFeatured   Boolean  @default(false)
+  week         String?  // For weekly rotation (e.g., "2026-W07")
+  
+  // New evaluation system fields
+  rewardZoneType String  @default("top_n") // "top_n" or "top_percentile"
+  rewardZoneValue Int   @default(3) // N value for top_n or percentile for top_percentile
+  totalPrizePool Float? @default(80.0) // Total prize pool for this challenge
+  
   chats        Chat[]
+  stressTests  StressTest[]
+  miniModels   MiniModel[]
+  weeklyRotations WeeklyRotation[]
+  rewardEligibilities RewardEligibility[]
+  challengePrizes ChallengePrizes[]
 
   @@map("challenge")
 }
@@ -125,6 +141,8 @@ model Chat {
   challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages    Message[]
+  miniModel   MiniModel?
+  stressResults StressTestResult[]
 
   @@index([userId])
   @@index([challengeId])
@@ -151,10 +169,12 @@ model Message {
 
 model ChallengePrizes {
   id        String   @id @default(cuid())
+  challengeId String
+  position  Int      // 1st, 2nd, 3rd
   amount    Float
-  position  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
   @@map("challenge_prizes")
 }
@@ -200,4 +220,112 @@ model UserFingerprint {
   @@index([userId])
   @@index([fingerprint])
   @@map("user_fingerprint")
+}
+
+model StressTest {
+  id          String   @id @default(cuid())
+  challengeId String
+  testCase    String
+  testType    String   // adversarial, edge_case, contradictory, extreme_constraint, out_of_distribution
+  expected    Json?    // Expected response pattern
+  weight      Float    @default(1.0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  results     StressTestResult[]
+
+  @@map("stress_test")
+}
+
+model StressTestResult {
+  id          String   @id @default(cuid())
+  stressTestId String
+  chatId      String
+  miniModelId String
+  output      String
+  score       Float
+  passed      Boolean
+  breakdown   Json?
+  createdAt   DateTime @default(now())
+  stressTest  StressTest @relation(fields: [stressTestId], references: [id], onDelete: Cascade)
+  chat        Chat       @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  miniModel   MiniModel  @relation(fields: [miniModelId], references: [id], onDelete: Cascade)
+
+  @@map("stress_test_result")
+}
+
+model MiniModel {
+  id             String   @id @default(cuid())
+  userId         String
+  challengeId    String
+  chatId         String   @unique
+  title          String
+  description    String?
+  systemPrompt   String
+  finalScore     Float
+  robustnessScore Float
+  totalXp        Int
+  coinsEarned    Int
+  isPublic       Boolean  @default(false)
+  isPublished    Boolean  @default(false)
+  publishedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // New evaluation system fields
+  tier           String?  // "Platinum", "Gold", "Silver", "Bronze"
+  percentile     Float?   // 0.0 - 1.0 representing percentile rank
+  isRewardEligible Boolean @default(false)
+  internalRank   Int?     // Internal ranking (hidden from users)
+  
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge      Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  chat           Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  stressResults  StressTestResult[]
+  publications   MiniModelPublication[]
+  rewardEligibility RewardEligibility?
+
+  @@map("mini_model")
+}
+
+model MiniModelPublication {
+  id          String   @id @default(cuid())
+  miniModelId String
+  publisherId String
+  publishedAt DateTime @default(now())
+  downloads   Int      @default(0)
+  rating      Float?   @default(0)
+  reviews     Int      @default(0)
+  miniModel   MiniModel @relation(fields: [miniModelId], references: [id], onDelete: Cascade)
+  publisher   User      @relation(fields: [publisherId], references: [id], onDelete: Cascade)
+
+  @@map("mini_model_publication")
+}
+
+model WeeklyRotation {
+  id           String   @id @default(cuid())
+  week         String   @unique // e.g., "2026-W07"
+  theme        String
+  featuredId   String
+  activeIds    Json     // Array of challenge IDs
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  featuredChallenge Challenge @relation(fields: [featuredId], references: [id])
+
+  @@map("weekly_rotation")
+}
+
+model RewardEligibility {
+  id          String   @id @default(cuid())
+  challengeId String
+  miniModelId String   @unique
+  position    Int      // 1st, 2nd, 3rd, etc.
+  prizeAmount Float?
+  isEligible  Boolean  @default(false)
+  calculatedAt DateTime @default(now())
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  miniModel   MiniModel @relation(fields: [miniModelId], references: [id], onDelete: Cascade)
+
+  @@map("reward_eligibility")
 }

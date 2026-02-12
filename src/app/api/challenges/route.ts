@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Transform the data to match the frontend interface
+    // Transform data to match frontend interface
     const transformedChallenges = challenges.map(challenge => {
       const taskData = typeof challenge.task === 'string' 
         ? JSON.parse(challenge.task)
@@ -33,7 +33,36 @@ export async function GET(request: NextRequest) {
         difficulty: challenge.difficulty,
         gameType: challenge.gameType,
         estimatedTime: taskData.gameplay?.timeLimitSeconds || 300,
-        rewards: challenge.rewards || { xp: 50, coins: 25 },
+        task: {
+          objective: taskData.objective || "",
+          constraints: {
+            required: taskData.constraints?.required || [],
+            forbidden: taskData.constraints?.forbidden || [],
+            optional: taskData.constraints?.optional || [],
+          },
+        },
+        gameplay: {
+          turnBased: taskData.gameplay?.turnBased || false,
+          maxTurns: taskData.gameplay?.maxTurns,
+          timeLimitSeconds: taskData.gameplay?.timeLimitSeconds || 300,
+          scoringMode: taskData.gameplay?.scoringMode || "quality_score",
+        },
+        scoring: {
+          totalScore: taskData.scoring?.totalScore || 100,
+          passingScore: taskData.scoring?.passingScore || 70,
+          breakdown: taskData.scoring?.breakdown || {
+            consistency: 30,
+            output_quality: 25,
+            robustness: 25,
+            creativity: 10,
+            brevity: 10,
+          },
+        },
+        rewards: {
+          base_xp: taskData.rewards?.base_xp || 50,
+          base_coins: taskData.rewards?.base_coins || 25,
+          completion_bonus: taskData.rewards?.completion_bonus || {},
+        },
       };
     });
 

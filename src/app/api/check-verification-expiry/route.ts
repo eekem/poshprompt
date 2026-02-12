@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     // Find the most recent verification token for this email
     const verification = await prisma.verification.findFirst({
       where: {
-        identifier: email,
+        identifier: `email-verification-otp-${email}`,
       },
       orderBy: {
         createdAt: 'desc',

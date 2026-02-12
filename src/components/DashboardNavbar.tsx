@@ -2,8 +2,8 @@
 
 interface DashboardNavbarProps {
   pendingCoins?: number;
-  xp?: number;
-  earnedXP?: number;
+  certification?: number;
+  earnedCertification?: number;
   promptBalance?: number;
   userAvatar?: string;
   userRank?: number | null;
@@ -15,8 +15,8 @@ interface DashboardNavbarProps {
 
 export default function DashboardNavbar({ 
   pendingCoins = 2400, 
-  xp = 14250,
-  earnedXP = 1250,
+  certification = 14250,
+  earnedCertification = 1250,
   promptBalance = 45,
   userAvatar = "https://lh3.googleusercontent.com/aida-public/AB6AXuDZAzDZETpDLvq6HiTalR_wAiLxtA8IoU_C-ZIrwS8RfwXqMUn67V96w5k6UfGDig70tQfDLlOoPjaOfy4cNuET9v_FQNRN0W3PqFR7z9dbXVQGtnLj4AyUB_DkVc03yLrkjCpQSrwvPlNbDRh8WaqRZxl0DZ1Mii2uucdQK45V3Eyet5G1_wT72NeOJco5HyEKkJxNHuB4ncTiaQh8aBiZ8ZKdr5t8wlziikhczBS7UA3OHASW6zjQb_hqldhXI_TL3G8oRQNURGtj",
   userRank = null,
@@ -79,7 +79,7 @@ export default function DashboardNavbar({
           {/* Earned XP */}
           <button className="flex items-center justify-center rounded-lg h-8 sm:h-10 px-3 sm:px-4 bg-[#211b11] text-[#f59e0b] text-xs sm:text-sm font-bold border border-[#f59e0b]/20">
             <span className="material-symbols-outlined text-[16px] sm:text-[18px] mr-1 sm:mr-2">stars</span>
-            <span className="truncate">{earnedXP.toLocaleString()} XP</span>
+            <span className="truncate">{earnedCertification.toLocaleString()} Cert</span>
           </button>
           
           {/* Prompt Balance */}

@@ -6,7 +6,7 @@ import TikTokLogo from "@/components/TikTok";
 import PasswordInput from "@/components/PasswordInput";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/lib/use-auth";
-import { collectFingerprint } from "@/app/lib/fingerprint";
+import { authClient } from "@/app/lib/auth-client";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -18,25 +18,11 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [fingerprintData, setFingerprintData] = useState<any>(null);
-
-  // Collect fingerprint data on component mount
-  useEffect(() => {
-    const collectData = async () => {
-      try {
-        const data = collectFingerprint();
-        setFingerprintData(data);
-      } catch (error) {
-        console.error('Failed to collect fingerprint:', error);
-      }
-    };
-    collectData();
-  }, []);
 
   // Redirect authenticated users to challenge page
   useEffect(() => {
     if (!authLoading && user) {
-      router.push("/challenge");
+      router.push("/secure");
     }
   }, [user, authLoading, router]);
 
@@ -61,20 +47,13 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      // Collect fingerprint data before redirecting
-      if (!fingerprintData) {
-        setError("Browser fingerprint not available. Please refresh the page and try again.");
-        return;
-      }
-
-      // Encode fingerprint data for URL
-      const encodedFingerprintData = encodeURIComponent(JSON.stringify(fingerprintData));
-      
-      // Redirect to our custom social auth route with fingerprint data
-      window.location.href = `/api/auth/social/${provider}?fingerprintData=${encodedFingerprintData}`;
+      // Use better-auth's built-in social sign in
+      await authClient.signIn.social({
+        provider,
+        callbackURL: "/secure"
+      });
     } catch (err) {
       setError(`An unexpected error occurred with ${provider} sign up`);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -91,31 +70,25 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          name,
-          username,
-          fingerprintData,
-        }),
+      // Use better-auth's built-in signUp.email method
+      const { data, error } = await authClient.signUp.email({
+        email,
+        password,
+        name,
+        // callbackURL: "/verify-email"
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Registration failed");
-      } else {
-        // Always redirect to verification page since email verification is required
-        const encodedEmail = btoa(email);
-        router.push(`/verify-email?email=${encodedEmail}`);
+      if (error) {
+        setError(error.message || "Registration failed");
+        return;
       }
+
+      // Registration successful - redirect to email verification page
+      const encodedEmail = btoa(email);
+      router.push(`/verify-email?email=${encodedEmail}`);
+      
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError("An unexpected error occurred during registration");
     } finally {
       setIsLoading(false);
     }

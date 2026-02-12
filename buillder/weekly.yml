@@ -1,0 +1,313 @@
+# =============================================
+# PoshPrompt Weekly Rotation Configuration
+# File: weekly_rotation.yaml
+# Selects from challenge_templates.yaml
+# =============================================
+
+version: "2.0"
+rotation_type: weekly
+description: >
+  Defines which challenges are active each week.
+  Automatically rotates a balanced mix of difficulties and themes.
+  One challenge is always "featured" (highlighted on the arena page).
+  Ensures variety while maintaining quality and engagement.
+
+rotation_rules:
+  challenges_per_week: 5
+  mix_requirements:
+    beginner: 1
+    intermediate: 2
+    advanced: 2
+  featured: 1 per week
+  rotation_logic: round_robin_with_theme_boost
+  refresh_day: "Monday"
+  refresh_time: "00:00 UTC"
+  min_days_per_challenge: 7
+  max_days_per_challenge: 14
+  repeat_prevention: "No challenge repeats within 8 weeks"
+  popularity_boost: "Top 3 most completed challenges get 20% higher rotation probability"
+  new_challenge_priority: "New challenges get 2x rotation frequency for first 4 weeks"
+
+challenge_pool:
+  # Core challenges - always in rotation pool
+  core_challenges:
+    - train-savage-reviewer-001      # intermediate - Code review skills
+    - train-breakup-advisor-001      # intermediate - Emotional intelligence
+    - train-spec-writer-001          # advanced - Technical writing
+    - train-useless-superpower-001   # beginner - Creative storytelling
+    - train-meme-lord-001            # intermediate - Social media skills
+    - train-debug-guru-001           # advanced - Problem solving
+    - train-story-refiner-001        # intermediate - Editing skills
+  
+  # Seasonal challenges - rotate in based on time of year
+  seasonal_challenges:
+    winter:
+      - train-holiday-storyteller    # Beginner - Holiday themed
+      - train-year-in-review         # Advanced - Annual reflection
+    spring:
+      - train-growth-mindset         # Intermediate - Personal development
+      - train-spring-cleaning        # Beginner - Organization
+    summer:
+      - train-vacation-planner       # Intermediate - Travel planning
+      - train-outdoor-adventure      # Beginner - Nature storytelling
+    fall:
+      - train-back-to-school         # Advanced - Educational content
+      - train-harvest-festival        # Beginner - Event planning
+  
+  # Special event challenges - limited time availability
+  event_challenges:
+    hackathon:
+      - train-rapid-prototyper       # Advanced - Fast development
+      - train-bug-squasher           # Intermediate - Debugging under pressure
+    conference:
+      - train-networking-ninja       # Intermediate - Professional communication
+      - train-pitch-perfect          # Advanced - Presentation skills
+    community:
+      - train-mentor-mindset         # Intermediate - Teaching skills
+      - train-collaboration-king     # Advanced - Teamwork
+  
+  # Difficulty distribution for balancing
+  difficulty_distribution:
+    beginner:
+      - train-useless-superpower-001
+      - train-holiday-storyteller
+      - train-spring-cleaning
+      - train-outdoor-adventure
+      - train-harvest-festival
+    intermediate:
+      - train-savage-reviewer-001
+      - train-breakup-advisor-001
+      - train-meme-lord-001
+      - train-story-refiner-001
+      - train-growth-mindset
+      - train-vacation-planner
+      - train-networking-ninja
+      - train-mentor-mindset
+    advanced:
+      - train-spec-writer-001
+      - train-debug-guru-001
+      - train-year-in-review
+      - train-rapid-prototyper
+      - train-bug-squasher
+      - train-pitch-perfect
+      - train-back-to-school
+      - train-collaboration-king
+
+# Automated rotation algorithm
+# The system generates this schedule dynamically based on:
+# 1. Rotation rules above
+# 2. Challenge popularity metrics
+# 3. Seasonal relevance
+# 4. User completion rates
+# 5. Theme variety requirements
+
+schedule_generation:
+  algorithm: "weighted_round_robin_with_popularity_boost"
+  factors:
+    base_weight: 1.0                    # All challenges start here
+    popularity_multiplier: 1.2          # Top 25% most popular
+    new_challenge_boost: 2.0            # First 4 weeks
+    seasonal_boost: 1.5                 # In-season challenges
+    difficulty_balance: 1.0              # Maintains required mix
+    theme_variety: 1.2                   # Avoids theme repetition
+  
+  selection_process:
+    1. "Filter eligible challenges (not recently featured)"
+    2. "Apply seasonal and event boosts"
+    3. "Calculate weighted scores"
+    4. "Select top candidates maintaining difficulty balance"
+    5. "Choose featured challenge from highest weighted option"
+    6. "Validate theme variety and user engagement potential"
+
+# Sample rotation for the next 12 weeks
+# Generated using the algorithm above
+
+schedule:
+
+  - week: "2026-W07"   # February 9 – 15, 2026
+    featured: train-spec-writer-001
+    featured_reason: "High completion rate, advanced difficulty balance"
+    active_challenges:
+      - train-spec-writer-001          # Advanced - Featured
+      - train-savage-reviewer-001      # Intermediate
+      - train-breakup-advisor-001      # Intermediate
+      - train-useless-superpower-001   # Beginner
+      - train-debug-guru-001           # Advanced
+    theme: "Developer Week"
+    theme_description: "Focus on technical and professional skills"
+    seasonal_boost: false
+    estimated_engagement: "High (technical audience)"
+
+  - week: "2026-W08"   # February 16 – 22, 2026
+    featured: train-meme-lord-001
+    featured_reason: "Social media engagement, creative skills"
+    active_challenges:
+      - train-meme-lord-001            # Intermediate - Featured
+      - train-breakup-advisor-001      # Intermediate
+      - train-story-refiner-001        # Intermediate
+      - train-useless-superpower-001   # Beginner
+      - train-debug-guru-001           # Advanced
+    theme: "Creative & Chaos Week"
+    theme_description: "Emphasis on creativity and adaptive thinking"
+    seasonal_boost: false
+    estimated_engagement: "Medium-high (creative appeal)"
+
+  - week: "2026-W09"   # February 23 – March 1, 2026
+    featured: train-savage-reviewer-001
+    featured_reason: "Consistent high performance, code review skills"
+    active_challenges:
+      - train-savage-reviewer-001      # Intermediate - Featured
+      - train-spec-writer-001          # Advanced
+      - train-meme-lord-001            # Intermediate
+      - train-breakup-advisor-001      # Intermediate
+      - train-story-refiner-001        # Intermediate
+    theme: "Roast & Refine Week"
+    theme_description: "Critical feedback and improvement skills"
+    seasonal_boost: false
+    estimated_engagement: "High (developer community)"
+
+  - week: "2026-W10"   # March 2 – 8, 2026
+    featured: train-debug-guru-001
+    featured_reason: "Advanced problem solving, systematic thinking"
+    active_challenges:
+      - train-debug-guru-001           # Advanced - Featured
+      - train-savage-reviewer-001      # Intermediate
+      - train-useless-superpower-001   # Beginner
+      - train-meme-lord-001            # Intermediate
+      - train-spec-writer-001          # Advanced
+    theme: "Hardcore Dev Week"
+    theme_description: "Advanced technical challenges and debugging"
+    seasonal_boost: false
+    estimated_engagement: "Medium (advanced difficulty)"
+
+  - week: "2026-W11"   # March 9 – 15, 2026
+    featured: train-breakup-advisor-001
+    featured_reason: "Emotional intelligence focus, high engagement"
+    active_challenges:
+      - train-breakup-advisor-001      # Intermediate - Featured
+      - train-story-refiner-001        # Intermediate
+      - train-useless-superpower-001   # Beginner
+      - train-meme-lord-001            # Intermediate
+      - train-debug-guru-001           # Advanced
+    theme: "Emotional Intelligence Week"
+    theme_description: "Communication and empathy skills"
+    seasonal_boost: false
+    estimated_engagement: "High (broad appeal)"
+
+  - week: "2026-W12"   # March 16 – 22, 2026
+    featured: train-useless-superpower-001
+    featured_reason: "Beginner-friendly, creative storytelling"
+    active_challenges:
+      - train-useless-superpower-001   # Beginner - Featured
+      - train-spec-writer-001          # Advanced
+      - train-savage-reviewer-001      # Intermediate
+      - train-breakup-advisor-001      # Intermediate
+      - train-story-refiner-001        # Intermediate
+    theme: "Absurd & Fun Week"
+    theme_description: "Creative challenges and humor"
+    seasonal_boost: false
+    estimated_engagement: "Medium-high (accessible content)"
+
+  - week: "2026-W13"   # March 23 – 29, 2026
+    featured: train-story-refiner-001
+    featured_reason: "Collaborative editing, narrative skills"
+    active_challenges:
+      - train-story-refiner-001        # Intermediate - Featured
+      - train-meme-lord-001            # Intermediate
+      - train-debug-guru-001           # Advanced
+      - train-useless-superpower-001   # Beginner
+      - train-savage-reviewer-001      # Intermediate
+    theme: "Narrative Mastery Week"
+    theme_description: "Storytelling and content refinement"
+    seasonal_boost: false
+    estimated_engagement: "Medium (creative writing focus)"
+
+  - week: "2026-W14"   # March 30 – April 5, 2026
+    featured: train-spec-writer-001
+    featured_reason: "Professional skills, technical writing excellence"
+    active_challenges:
+      - train-spec-writer-001          # Advanced - Featured
+      - train-breakup-advisor-001      # Intermediate
+      - train-meme-lord-001            # Intermediate
+      - train-debug-guru-001           # Advanced
+      - train-story-refiner-001        # Intermediate
+    theme: "Developer Week"
+    theme_description: "Back to technical and professional development"
+    seasonal_boost: false
+    estimated_engagement: "High (professional development)"
+
+rotation_settings:
+  auto_rotate: true
+  allow_repeats_after: 8 weeks
+  boost_popular_challenges: true
+  manual_override: true   # Admin can force specific challenges any week
+  
+  # Performance tracking
+  metrics_tracked:
+    - completion_rate
+    - average_score
+    - time_to_complete
+    - user_satisfaction
+    - retention_rate
+  
+  # Adaptive rotation
+  adaptive_features:
+    - "Automatically boost underperforming challenges"
+    - "Reduce frequency of overly difficult challenges"
+    - "Increase variety if user engagement drops"
+    - "Seasonal theme integration"
+    - "Event-based challenge selection"
+  
+  # Admin controls
+  admin_overrides:
+    - "Force specific challenge for featured slot"
+    - "Extend popular challenges for extra week"
+    - "Remove underperforming challenges"
+    - "Add emergency challenges for events"
+    - "Adjust difficulty requirements temporarily"
+
+display:
+  arena_sidebar_title: "This Week's Training Arena"
+  featured_label: "🔥 Featured Mini-Model Challenge"
+  theme_banner: true
+  
+  # UI elements
+  visual_indicators:
+    - "Difficulty badges with color coding"
+    - "Time estimates for each challenge"
+    - "Completion progress bars"
+    - "Popularity indicators"
+    - "New challenge badges"
+  
+  # User guidance
+  helper_text:
+    new_user: "Start with the featured challenge for the best experience!"
+    returning_user: "Try something new this week to expand your skills!"
+    advanced_user: "Challenge yourself with our advanced difficulty options!"
+  
+  # Accessibility
+  accessibility_features:
+    - "Screen reader compatible challenge descriptions"
+    - "High contrast mode support"
+    - "Keyboard navigation for challenge selection"
+    - "Text size adjustment options"
+
+# Future enhancements
+planned_features:
+  short_term:
+    - "User voting on next week's theme"
+    - "Personalized challenge recommendations"
+    - "Challenge streak tracking"
+    - "Social sharing of challenge completions"
+  
+  medium_term:
+    - "Dynamic difficulty adjustment based on user skill"
+    - "Multi-language challenge support"
+    - "Challenge creator marketplace"
+    - "Team-based weekly competitions"
+  
+  long_term:
+    - "AI-powered challenge generation"
+    - "Cross-platform challenge synchronization"
+    - "Professional certification challenges"
+    - "Enterprise custom challenge pools"

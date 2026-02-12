@@ -16,8 +16,8 @@ interface Challenge {
   gameType: 'image' | 'text' | 'transformation' | 'refinement' | 'evaluation';
   estimatedTime: number;
   rewards: {
-    xp: number;
-    coins: number;
+    certification: number;
+    tokens: number;
   };
 }
 
@@ -31,11 +31,11 @@ function ChallengeListContent() {
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
   const itemsPerPage = 6;
   const [userStats, setUserStats] = useState({
-    totalXP: 0,
+    totalCertification: 0,
     totalChallenges: 0,
     ongoingChallenges: 0,
     totalPrompts: 0,
-    earnedBalance: 0.0,
+    tokenBalance: 0.0,
   });
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
 
@@ -73,22 +73,22 @@ function ChallengeListContent() {
         if (statsResponse.ok) {
           const statsData = await statsResponse.json();
           setUserStats({
-            totalXP: statsData.totalXP || 0,
+            totalCertification: statsData.totalCertification || 0,
             totalChallenges: statsData.totalChallenges || 0,
             ongoingChallenges: statsData.ongoingChallenges || 0,
             totalPrompts: statsData.totalPrompts || 0,
-            earnedBalance: statsData.earnedBalance || 0.0,
+            tokenBalance: statsData.tokenBalance || 0.0,
           });
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
   
         setUserStats({
-          totalXP: 0,
+          totalCertification: 0,
           totalChallenges: 0,
           ongoingChallenges: 0,
           totalPrompts: 0,
-          earnedBalance: 0,
+          tokenBalance: 0,
         });
       } finally {
         setLoading(false);
@@ -187,8 +187,8 @@ function ChallengeListContent() {
       {/* Enhanced Navbar */}
       <DashboardNavbar 
         pendingCoins={userStats.totalChallenges * 50} // Calculate from completed challenges
-        xp={userStats.totalXP}
-        earnedXP={Math.floor(userStats.earnedBalance * 0.1)} // Calculate from earned balance
+        certification={userStats.totalCertification}
+        earnedCertification={Math.floor(userStats.tokenBalance * 0.1)} // Calculate from token balance
         promptBalance={userStats.totalPrompts}
         userAvatar={user?.image || undefined}
         onLogout={handleLogout}
@@ -214,8 +214,8 @@ function ChallengeListContent() {
                 <span className="material-symbols-outlined text-black">emoji_events</span>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Total XP</p>
-                <p className="text-2xl font-bold text-primary">{userStats.totalXP.toLocaleString()}</p>
+                <p className="text-sm text-gray-400">Total Certification</p>
+                <p className="text-2xl font-bold text-primary">{userStats.totalCertification.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -236,31 +236,31 @@ function ChallengeListContent() {
                 <span className="material-symbols-outlined text-white">assignment</span>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Challenges</p>
+                <p className="text-sm text-gray-400">Training Sessions</p>
                 <p className="text-lg font-bold text-green-400">{userStats.totalChallenges} Total</p>
-                <p className="text-sm text-green-300">{userStats.ongoingChallenges} Ongoing</p>
+                <p className="text-sm text-green-300">{userStats.ongoingChallenges} In Progress</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Challenges Section */}
+        {/* Training Sessions Section */}
         <div>
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Available Challenges</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Available Training Sessions</h2>
               <p className="text-sm text-gray-400">
                 {filteredChallenges.length === challenges.length 
-                  ? `${challenges.length} challenges available` 
-                  : `${filteredChallenges.length} of ${challenges.length} challenges found`}
+                  ? `${challenges.length} training sessions available` 
+                  : `${filteredChallenges.length} of ${challenges.length} training sessions found`}
               </p>
             </div>
             {/* Search Bar */}
             <div className="relative w-full sm:max-w-md">
               <input
                 type="text"
-                placeholder="Search challenges..."
+                placeholder="Search training sessions..."
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full px-4 py-3 pl-12 bg-surface-dark border border-[#332a1e] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary/50 transition-colors"
@@ -271,7 +271,7 @@ function ChallengeListContent() {
             </div>
           </div>
 
-          {/* Challenges List */}
+        {/* Training Sessions List */}
         {filteredChallenges.length === 0 ? (
           /* Empty State */
           <div className="text-center py-12 sm:py-16">
@@ -279,10 +279,10 @@ function ChallengeListContent() {
               <span className="material-symbols-outlined text-primary text-3xl sm:text-4xl">smart_toy</span>
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
-              {searchTerm ? 'No Challenges Found' : 'No Challenges Available'}
+              {searchTerm ? 'No Training Sessions Found' : 'No Training Sessions Available'}
             </h3>
             <p className="text-gray-400 mb-6 sm:mb-8 max-w-sm sm:max-w-md mx-auto px-4">
-              {searchTerm ? 'Try adjusting your search terms to find what you\'re looking for.' : 'Challenge engineers are working hard to create new AI challenges for you. Check back soon!'}
+              {searchTerm ? 'Try adjusting your search terms to find what you\'re looking for.' : 'AI training specialists are working hard to create new training sessions for you. Check back soon!'}
             </p>
             {searchTerm && (
               <button
@@ -297,16 +297,16 @@ function ChallengeListContent() {
           <>
             {/* Vertical List Container */}
             <div className="flex flex-col gap-3 sm:gap-4">
-              {paginatedChallenges.map((challenge) => (
+              {paginatedChallenges.map((trainingSession) => (
                 <Link 
-                  key={challenge.id} 
-                  href={`/challenge/${challenge.id}`}
+                  key={trainingSession.id} 
+                  href={`/challenge/${trainingSession.id}`}
                   className="group flex flex-col sm:flex-row sm:items-center gap-4 bg-surface-dark border border-[#332a1e] rounded-lg p-4 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
                 >
                   {/* Icon */}
                   <div className="w-12 h-12 bg-[#493b22] rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
                     <span className="material-symbols-outlined text-primary text-xl">
-                      {getGameIcon(challenge.gameType)}
+                      {getGameIcon(trainingSession.gameType)}
                     </span>
                   </div>
 
@@ -314,14 +314,14 @@ function ChallengeListContent() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-primary transition-colors truncate">
-                        {challenge.title}
+                        {trainingSession.title}
                       </h3>
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${getDifficultyColor(challenge.difficulty)} uppercase tracking-wider shrink-0`}>
-                        {challenge.difficulty}
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${getDifficultyColor(trainingSession.difficulty)} uppercase tracking-wider shrink-0`}>
+                        {trainingSession.difficulty}
                       </span>
                     </div>
                     <p className="text-gray-400 text-sm line-clamp-2 sm:line-clamp-1">
-                      {challenge.description}
+                      {trainingSession.description}
                     </p>
                   </div>
 
@@ -329,16 +329,16 @@ function ChallengeListContent() {
                   <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm shrink-0">
                     <div className="flex items-center gap-1 sm:gap-2 text-gray-400">
                       <span className="material-symbols-outlined text-sm sm:text-base">timer</span>
-                      <span className="hidden sm:inline">{formatTime(challenge.estimatedTime)}</span>
-                      <span className="sm:hidden">{formatTime(challenge.estimatedTime).replace('m', '')}m</span>
+                      <span className="hidden sm:inline">{formatTime(trainingSession.estimatedTime)}</span>
+                      <span className="sm:hidden">{formatTime(trainingSession.estimatedTime).replace('m', '')}m</span>
                     </div>
                     <div className="flex items-center gap-1 text-primary">
                       <span className="material-symbols-outlined text-sm sm:text-base">stars</span>
-                      <span className="font-mono font-semibold">{challenge.rewards.xp}</span>
+                      <span className="font-mono font-semibold">{trainingSession.rewards.certification}</span>
                     </div>
                     <div className="flex items-center gap-1 text-gold-accent">
                       <span className="material-symbols-outlined text-sm sm:text-base">monetization_on</span>
-                      <span className="font-mono font-semibold">{challenge.rewards.coins}</span>
+                      <span className="font-mono font-semibold">{trainingSession.rewards.tokens}</span>
                     </div>
                   </div>
                 </Link>
