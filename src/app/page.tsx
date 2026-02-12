@@ -2,18 +2,18 @@ import { Metadata } from "next";
 import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
-  title: "PoshPrompt | Home - The Premier AI Arena",
-  description: "Join the world's first competitive arena for prompt engineers. Test your skills in real-time AI challenges, climb the rankings, and earn rewards.",
-  keywords: ["prompt engineering", "AI challenges", "competitive programming", "AI arena", "prompt battles"],
+  title: "PoshPrompt | Strategic AI Building Game",
+  description: "Build AI models using limited tools and compete based on how intelligently you combine them. A competitive strategy game of resource management and AI construction.",
+  keywords: ["AI building game", "strategy game", "AI competition", "model construction", "resource management", "AI meta-layer"],
   openGraph: {
-    title: "PoshPrompt | Home - The Premier AI Arena",
-    description: "Join the world's first competitive arena for prompt engineers. Test your skills in real-time AI challenges, climb the rankings, and earn rewards.",
+    title: "PoshPrompt | Strategic AI Building Game",
+    description: "Build AI models using limited tools and compete based on how intelligently you combine them. A competitive strategy game of resource management and AI construction.",
     url: '/',
     type: 'website',
   },
   twitter: {
-    title: "PoshPrompt | Home - The Premier AI Arena",
-    description: "Join the world's first competitive arena for prompt engineers. Test your skills in real-time AI challenges, climb the rankings, and earn rewards.",
+    title: "PoshPrompt | Strategic AI Building Game",
+    description: "Build AI models using limited tools and compete based on how intelligently you combine them. A competitive strategy game of resource management and AI construction.",
   },
   alternates: {
     canonical: '/',

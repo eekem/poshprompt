@@ -19,27 +19,33 @@ interface Message {
   };
 }
 
-const challenges = [
+const modelBuildingChallenges = [
   {
-    id: 'creative-constraint',
-    title: 'Creative Constraint',
-    description: 'Write a haiku about cybersecurity without using the words "code", "hack", or "wall".',
-    forbiddenWords: ['code', 'hack', 'wall'],
-    expectedFormat: 'haiku'
+    id: 'savage-reviewer',
+    title: 'Savage Code Reviewer',
+    description: 'Build a mini-AI that delivers funny, technically accurate, and actionable code reviews without being toxic.',
+    tools: ['Code Analysis', 'Humor Engine', 'Professional Tone'],
+    difficulty: 'Intermediate',
+    estimatedTime: '25 min',
+    maxPrompts: 40
   },
   {
-    id: 'technical-explanation',
-    title: 'Technical Explanation',
-    description: 'Explain machine learning to a 10-year-old using only analogies from cooking.',
-    forbiddenWords: ['algorithm', 'neural', 'network', 'data'],
-    expectedFormat: 'simple explanation'
+    id: 'breakup-advisor',
+    title: 'Emotional Breakup Advisor',
+    description: 'Train a mini-AI that helps users write kind, clear, and emotionally intelligent breakup messages.',
+    tools: ['Empathy Module', 'Communication Coach', 'Ethics Guard'],
+    difficulty: 'Intermediate', 
+    estimatedTime: '20 min',
+    maxPrompts: 30
   },
   {
-    id: 'creative-writing',
-    title: 'Creative Writing',
-    description: 'Write a short story about time travel where the time machine is a musical instrument.',
-    forbiddenWords: ['time', 'travel', 'machine', 'future'],
-    expectedFormat: 'short story'
+    id: 'spec-writer',
+    title: 'Chaos Ticket → Bulletproof Spec',
+    description: 'Transform vague, messy tickets into clean, complete product specifications.',
+    tools: ['Requirements Parser', 'Stakeholder Manager', 'Technical Writer'],
+    difficulty: 'Advanced',
+    estimatedTime: '35 min',
+    maxPrompts: 45
   }
 ];
 
@@ -48,11 +54,13 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentChallenge, setCurrentChallenge] = useState(challenges[0]);
-  const [metrics, setMetrics] = useState({
-    constraints_met: 100,
-    creativity: 92,
-    efficiency: 85
+  const [currentChallenge, setCurrentChallenge] = useState(modelBuildingChallenges[0]);
+  const [modelStrength, setModelStrength] = useState({
+    baseScore: 25,
+    diversityBonus: 15,
+    synergyBonus: 10,
+    totalStrength: 50,
+    remainingPrompts: 35
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -108,11 +116,13 @@ export default function Home() {
       efficiency: Math.floor(Math.random() * 35) + 65
     };
 
-    // Update metrics
-    setMetrics({
-      constraints_met: evaluation.constraints_met,
-      creativity: evaluation.creativity,
-      efficiency: evaluation.efficiency
+    // Update model strength
+    setModelStrength({
+      baseScore: Math.floor(Math.random() * 30) + 40,
+      diversityBonus: Math.floor(Math.random() * 20) + 10,
+      synergyBonus: Math.floor(Math.random() * 15) + 5,
+      totalStrength: Math.floor(Math.random() * 40) + 60,
+      remainingPrompts: Math.max(0, modelStrength.remainingPrompts - 1)
     });
 
     return {
@@ -161,22 +171,22 @@ export default function Home() {
         <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center gap-4 sm:gap-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 mb-4">
             <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-            <span className="text-xs font-medium text-primary uppercase tracking-wider">Season 4 is Live</span>
+            <span className="text-xs font-medium text-primary uppercase tracking-wider">New Game Mode</span>
           </div>
           <h1 className="text-white text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight max-w-3xl sm:max-w-4xl" style={{ textShadow: '0 0 20px rgba(245, 159, 10, 0.2)' }}>
-            Compete. Craft. <br className="hidden md:block"/>
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-amber-200">Win with Prompts.</span>
+            Build. Strategize. <br className="hidden md:block"/>
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-amber-200">Outsmart the AI.</span>
           </h1>
           <p className="text-slate-400 text-base sm:text-lg md:text-xl font-normal leading-relaxed max-w-lg sm:max-w-2xl mx-auto px-2">
-            The premier arena for prompt engineers. Test your skills in real-time chat challenges, climb the global leaderboard, and earn cash prizes.
+            A competitive AI-building game where you strategically combine mini-model tools to create the strongest possible AI solution for each challenge.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8 w-full max-w-sm sm:max-w-none justify-center">
-            <button className="flex cursor-pointer items-center justify-center rounded-lg h-11 sm:h-12 px-6 sm:px-8 bg-primary hover:bg-amber-400 transition-all text-[#231c10] text-sm sm:text-base font-bold tracking-wide shadow-[0_0_20px_rgba(245,159,10,0.4)] hover:shadow-[0_0_30px_rgba(245,159,10,0.6)] w-full sm:w-auto" onClick={() => router.push('/arena')}>
-              Enter the Arena
+            <button className="flex cursor-pointer items-center justify-center rounded-lg h-11 sm:h-12 px-6 sm:px-8 bg-primary hover:bg-amber-400 transition-all text-[#231c10] text-sm sm:text-base font-bold tracking-wide shadow-[0_0_20px_rgba(245,159,10,0.4)] hover:shadow-[0_0_30px_rgba(245,159,10,0.6)] w-full sm:w-auto" onClick={() => router.push('/challenges')}>
+              Start Building
             </button>
-            <button className="flex cursor-pointer items-center justify-center rounded-lg h-11 sm:h-12 px-6 sm:px-8 bg-panel-dark border border-border-dark hover:border-primary/50 text-white text-sm sm:text-base font-medium transition-all group w-full sm:w-auto" onClick={() => router.push('/demo')}>
+            <button className="flex cursor-pointer items-center justify-center rounded-lg h-11 sm:h-12 px-6 sm:px-8 bg-panel-dark border border-border-dark hover:border-primary/50 text-white text-sm sm:text-base font-medium transition-all group w-full sm:w-auto" onClick={() => router.push('/how-it-works')}>
               <span className="material-symbols-outlined mr-2 group-hover:text-primary transition-colors text-lg sm:text-xl">play_circle</span>
-              Watch Demo
+              Learn Strategy
             </button>
           </div>
           {/* Social Proof */}
@@ -187,12 +197,12 @@ export default function Home() {
               <div className="size-6 sm:size-8 rounded-full border-2 border-background-dark bg-slate-500 bg-cover bg-center" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCh3ejb1vgsGAhEDq_ld78TpWl1TAXhwO2zT1YU7lmgzmJY0x32jkaUB0LswJ5YMJJuxOUTdzljPLMkpPh8DMJay_uF37k1rtJYHW3_DoicY1uyzgXR2I2cAxrXc6WYWeRIxRKboJ7o4t0_L3q_Z837BFGTIg2APq0dMgTE9ArNq_pkjVEhNeW-fnCgkKhkagMxfXep0DhmLh0izbiI9jB0HDwZf6DbrIuExQVkhbkPK8Rr_Yg-WfNXGhoitaJ4qPg_WXovxrFsiPr0")'}}></div>
               <div className="size-6 sm:size-8 rounded-full border-2 border-background-dark bg-panel-dark text-xs flex items-center justify-center font-medium text-white">+2k</div>
             </div>
-            <p className="text-center sm:text-left">Join 5,000+ Prompt Engineers competing daily</p>
+            <p className="text-center sm:text-left">Join 5,000+ Strategic Builders competing daily</p>
           </div>
         </div>
       </section>
 
-      {/* Interactive Demo / Chat UI */}
+      {/* Interactive Model Building Demo */}
       <section id="demo" className="px-4 sm:px-6 pb-16 sm:pb-20 max-w-6xl mx-auto w-full">
         <div className="relative rounded-xl border border-border-dark bg-panel-dark overflow-hidden shadow-2xl">
           <div className="flex items-center gap-2 border-b border-border-dark bg-background-dark px-3 sm:px-4 py-2 sm:py-3">
@@ -201,195 +211,201 @@ export default function Home() {
               <div className="size-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
               <div className="size-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
             </div>
-            <div className="ml-2 sm:ml-4 text-xs font-mono text-slate-500 truncate">{currentChallenge.id}.ts</div>
-            <div className="ml-auto flex gap-2">
-              {challenges.map((challenge) => (
+            <div className="ml-2 sm:ml-4 text-xs font-mono text-slate-500 truncate">{currentChallenge.id}-builder.ts</div>
+            <div className="ml-auto flex gap-1 sm:gap-2 overflow-x-auto">
+              {modelBuildingChallenges.map((challenge) => (
                 <button
                   key={challenge.id}
                   onClick={() => setCurrentChallenge(challenge)}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                  className={`px-2 py-1 text-xs rounded transition-colors whitespace-nowrap shrink-0 ${
                     currentChallenge.id === challenge.id
                       ? 'bg-primary text-black'
                       : 'bg-background-dark text-slate-400 hover:text-primary'
                   }`}
                 >
-                  {challenge.title}
+                  <span className="hidden sm:inline">{challenge.title}</span>
+                  <span className="sm:hidden">{challenge.id === 'savage-reviewer' ? 'Savage' : challenge.id === 'breakup-advisor' ? 'Breakup' : 'Spec'}</span>
                 </button>
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 min-h-[400px] sm:min-h-[500px]">
-            {/* Chat Area */}
-            <div className="md:col-span-2 flex flex-col border-r border-border-dark bg-[#0f0e0c] overflow-y-scroll max-h-[400px] sm:max-h-[600px]">
-              <div className="flex-1 p-3 sm:p-6 flex flex-col gap-4 sm:gap-6 overflow-y-auto">
-                {messages.map((message) => (
-                  <div key={message.id} className={`flex gap-3 sm:gap-4 ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`size-6 sm:size-8 shrink-0 rounded flex items-center justify-center ${
-                      message.type === 'system' || message.type === 'ai' 
-                        ? 'bg-primary/10 text-primary border border-primary/20' 
-                        : 'bg-slate-700 text-white'
-                    }`}>
-                      <span className="material-symbols-outlined text-sm sm:text-lg">
-                        {message.type === 'system' || message.type === 'ai' ? 'smart_toy' : 'person'}
-                      </span>
-                    </div>
-                    <div className={`flex flex-col gap-1 ${message.type === 'user' ? 'items-end' : ''}`}>
-                      <span className="text-xs font-bold text-slate-400">
-                        {message.type === 'system' ? 'System' : message.type === 'user' ? 'You' : 'Model Output'}
-                      </span>
-                      <div className={`${
-                        message.type === 'user' 
-                          ? 'bg-panel-dark border border-border-dark rounded-lg p-2 sm:p-3 text-xs sm:text-sm text-slate-200 max-w-[85%] sm:max-w-none' 
-                          : 'text-slate-300 text-xs sm:text-sm leading-relaxed'
+          <div className="grid grid-cols-1 xl:grid-cols-3 min-h-[500px] sm:min-h-[600px]">
+            {/* Model Building Interface */}
+            <div className="xl:col-span-2 flex flex-col bg-[#0f0e0c]">
+              {/* Challenge Header */}
+              <div className="border-b border-border-dark bg-background-dark p-3 sm:p-4 lg:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-base sm:text-lg font-bold text-white mb-2">{currentChallenge.title}</h3>
+                    <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{currentChallenge.description}</p>
+                  </div>
+                  <div className="flex flex-row sm:flex-col items-start sm:items-end gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-slate-500">Difficulty:</span>
+                      <span className={`px-2 py-1 rounded font-medium text-xs ${
+                        currentChallenge.difficulty === 'Advanced' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                        currentChallenge.difficulty === 'Intermediate' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                        'bg-green-500/20 text-green-400 border border-green-500/30'
                       }`}>
-                        {message.content}
-                      </div>
-                      {message.type === 'ai' && message.evaluation && (
-                        <div className={`bg-primary/5 border border-primary/20 rounded-lg p-3 sm:p-4 relative ${
-                          message.evaluation.passed ? 'border-green-500/30' : 'border-red-500/30'
-                        }`}>
-                          <p className="text-white italic text-sm sm:text-lg font-display mb-2">
-                            "{message.content}"
-                          </p>
-                          <div className={`absolute -right-2 -top-2 ${
-                            message.evaluation.passed ? 'bg-green-500' : 'bg-red-500'
-                          } text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border ${
-                            message.evaluation.passed ? 'border-green-400' : 'border-red-400'
-                          }`}>
-                            {message.evaluation.passed ? 'PASSED' : 'FAILED'}
-                          </div>
-                          <div className="text-xs text-slate-400 mt-2">
-                            Score: {message.evaluation.score}/100
-                          </div>
-                        </div>
-                      )}
+                        {currentChallenge.difficulty}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-slate-500">Time:</span>
+                      <span className="text-slate-300">{currentChallenge.estimatedTime}</span>
                     </div>
                   </div>
-                ))}
-                {isLoading && (
-                  <div className="flex gap-3 sm:gap-4">
-                    <div className="size-6 sm:size-8 shrink-0 rounded bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                      <span className="material-symbols-outlined text-sm sm:text-lg animate-pulse">smart_toy</span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-bold text-slate-400">Model Output</span>
-                      <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 sm:p-4">
-                        <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+                </div>
               </div>
-              {/* Input Area */}
-              <div className="p-3 sm:p-4 border-t border-border-dark bg-background-dark">
-                <div className="relative">
-                  <input 
-                    className="w-full bg-panel-dark border border-border-dark rounded-lg pl-3 sm:pl-4 pr-10 sm:pr-12 py-2 sm:py-3 text-xs sm:text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary outline-none placeholder-slate-600 transition-all" 
-                    placeholder="Type your prompt here..." 
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={isLoading}
-                  />
-                  <button 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 sm:p-1.5 text-slate-400 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={handleSendMessage}
-                    disabled={isLoading || !inputValue.trim()}
-                  >
-                    <span className="material-symbols-outlined text-lg sm:text-xl">send</span>
-                  </button>
+              
+              {/* Tools Selection Area */}
+              <div className="flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto">
+                <div className="mb-4 sm:mb-6">
+                  <h4 className="text-sm font-bold text-white mb-2 sm:mb-3">Available Tools</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2 sm:gap-3">
+                    {currentChallenge.tools.map((tool: string, index: number) => (
+                      <div key={tool} className="group relative">
+                        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border border-border-dark bg-panel-dark hover:border-primary/40 transition-all cursor-pointer">
+                          <div className="size-6 sm:size-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                            <span className="material-symbols-outlined text-xs sm:text-sm text-primary">build</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-xs sm:text-sm font-semibold text-white truncate">{tool}</h5>
+                            <p className="text-xs text-slate-400">Cost: {Math.floor(Math.random() * 5) + 3} prompts</p>
+                          </div>
+                          <button className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 text-xs bg-primary text-black rounded font-medium flex-shrink-0">
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Selected Tools */}
+                <div className="mb-4 sm:mb-6">
+                  <h4 className="text-sm font-bold text-white mb-2 sm:mb-3">Your Model Configuration</h4>
+                  <div className="p-3 sm:p-4 rounded-lg border border-primary/30 bg-primary/5">
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
+                      <span className="px-2 sm:px-3 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs rounded-full">
+                        Code Analysis (4 prompts)
+                      </span>
+                      <span className="px-2 sm:px-3 py-1 bg-purple-500/20 border border-purple-500/30 text-purple-400 text-xs rounded-full">
+                        Humor Engine (3 prompts)
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400">Total Cost:</span>
+                      <span className="text-primary font-bold">7 prompts</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Build Button */}
+                <button className="w-full py-2 sm:py-3 bg-primary hover:bg-amber-400 text-black rounded-lg font-bold transition-colors shadow-lg shadow-primary/20 text-sm sm:text-base">
+                  Build Model (7 prompts)
+                </button>
+              </div>
+            </div>
+            {/* Side Panel / Resources & Strategy */}
+            <div className="hidden lg:flex flex-col bg-panel-dark p-4 lg:p-6 gap-4 lg:gap-6">
+              {/* Resource Status */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 lg:mb-4">Your Resources</h3>
+                <div className="space-y-2 lg:space-y-3">
+                  <div className="p-2 lg:p-3 rounded-lg border border-border-dark bg-background-dark">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs sm:text-sm text-slate-300">Available Prompts</span>
+                      <span className="text-base lg:text-lg font-bold text-primary">{modelStrength.remainingPrompts}</span>
+                    </div>
+                    <div className="h-1.5 lg:h-2 w-full bg-background-dark rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all duration-500" style={{width: `${(modelStrength.remainingPrompts / 40) * 100}%`}}></div>
+                    </div>
+                  </div>
+                  <div className="p-2 lg:p-3 rounded-lg border border-border-dark bg-background-dark">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs sm:text-sm text-slate-300">Current Build Cost</span>
+                      <span className="text-base lg:text-lg font-bold text-amber-400">7</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Model Strength Preview */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 lg:mb-4">Model Strength Preview</h3>
+                <div className="space-y-2 lg:space-y-3">
+                  <div>
+                    <div className="flex justify-between text-xs sm:text-sm mb-1">
+                      <span className="text-slate-300">Base Score</span>
+                      <span className="text-primary font-mono text-xs sm:text-sm">{modelStrength.baseScore}</span>
+                    </div>
+                    <div className="h-1 lg:h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all duration-500" style={{width: `${modelStrength.baseScore}%`}}></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs sm:text-sm mb-1">
+                      <span className="text-slate-300">Diversity Bonus</span>
+                      <span className="text-primary font-mono text-xs sm:text-sm">+{modelStrength.diversityBonus}</span>
+                    </div>
+                    <div className="h-1 lg:h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 transition-all duration-500" style={{width: `${modelStrength.diversityBonus}%`}}></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs sm:text-sm mb-1">
+                      <span className="text-slate-300">Synergy Bonus</span>
+                      <span className="text-primary font-mono text-xs sm:text-sm">+{modelStrength.synergyBonus}</span>
+                    </div>
+                    <div className="h-1 lg:h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
+                      <div className="h-full bg-purple-500 transition-all duration-500" style={{width: `${modelStrength.synergyBonus}%`}}></div>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-border-dark">
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span className="text-white font-bold">Total Strength</span>
+                      <span className="text-base lg:text-lg font-bold text-primary">{modelStrength.totalStrength}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Strategy Tips */}
+              <div className="border-t border-border-dark pt-4 lg:pt-6 mt-auto">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 lg:mb-3">Strategy Tips</h3>
+                <div className="space-y-1 lg:space-y-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-primary text-xs mt-0.5">•</span>
+                    <p className="text-xs text-slate-400">Diverse tools give better bonuses</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-primary text-xs mt-0.5">•</span>
+                    <p className="text-xs text-slate-400">Save prompts for harder challenges</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-primary text-xs mt-0.5">•</span>
+                    <p className="text-xs text-slate-400">Some tools synergize well together</p>
+                  </div>
                 </div>
               </div>
             </div>
-            {/* Side Panel / Stats */}
-            <div className="hidden md:flex flex-col bg-panel-dark p-6 gap-6">
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">Evaluation Metrics</h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-slate-300">Constraints Met</span>
-                      <span className="text-primary font-mono">{metrics.constraints_met}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
-                      <div className="h-full bg-primary transition-all duration-500" style={{width: `${metrics.constraints_met}%`}}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-slate-300">Creativity Score</span>
-                      <span className="text-primary font-mono">{metrics.creativity}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
-                      <div className="h-full bg-primary transition-all duration-500" style={{width: `${metrics.creativity}%`}}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-slate-300">Token Efficiency</span>
-                      <span className="text-primary font-mono">{metrics.efficiency}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
-                      <div className="h-full bg-primary transition-all duration-500" style={{width: `${metrics.efficiency}%`}}></div>
-                    </div>
-                  </div>
+            
+            {/* Mobile Resources Bar */}
+            <div className="lg:hidden border-t border-border-dark bg-panel-dark p-3 sm:p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500">Prompts:</span>
+                  <span className="text-sm font-bold text-primary">{modelStrength.remainingPrompts}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500">Cost:</span>
+                  <span className="text-sm font-bold text-amber-400">7</span>
                 </div>
               </div>
-              <div className="border-t border-border-dark pt-6 mt-auto">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Challenge Info</h3>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs font-medium text-primary mb-1">{currentChallenge.title}</p>
-                    <p className="text-xs text-slate-400 leading-relaxed">{currentChallenge.description}</p>
-                  </div>
-                  {currentChallenge.forbiddenWords.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-slate-300 mb-2">Forbidden Words:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {currentChallenge.forbiddenWords.map((word) => (
-                          <span key={word} className="px-2 py-1 bg-red-500/20 border border-red-500/30 text-red-400 text-xs rounded">
-                            {word}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="border-t border-border-dark pt-6">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Live Leaderboard</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-yellow-500 font-bold w-4">1</span>
-                      <div className="size-6 rounded-full bg-slate-700 bg-cover bg-center" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCBBP7NTyrzRvupSZWjOP7a0hSZMzIbrLbgnMHoYimCREW8zgBMIhalPriOAecmQlw9cj3t3O82PdE_8NeY7xbjJC6gdJ5vk_100o_6_75ZpaSMZLsSrijP3za0sM4G_uqQc6evMHoBZHPViTmKG8ubKHlVYrlm8QxovqUThCWgnIUokRWeb4SIa9_2BMSukTL_Rr_qLGpHVTNmklmvscgOYnAPhS3E-sQiIQUjvRwF3Cosha1-umE3UGkiyElFtx1KilES1qee_ybr")'}}></div>
-                      <span className="text-slate-200">prompt_wizard</span>
-                    </div>
-                    <span className="font-mono text-primary">98.5</span>
-                  </li>
-                  <li className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-500 font-bold w-4">2</span>
-                      <div className="size-6 rounded-full bg-slate-700 bg-cover bg-center" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuA4K32BZ2__oa5mVx30waT2JUPf7deNaH9QyAkmPkORtEAxZWf7C6uOpU-O45kYjKhqZ_OCeUg5wUGEtVP6yjMxZnm2wn65I9I3BMs3_14c05Wpy9gkqayOCCpmeCpmnXBvJzPcApwWRF8kmSehYCdiiZpdCcusSiovXxtgiTlPEQ1Ujeur8Ei0fTGqPQEQeyRjoyz-uGzlYvkH6Q1HYK6Napoks8nWk5Lr2nkSTdXo-SR1_5YmvlZ7c6RNxTSrwogSqtgpacsj7qBW")'}}></div>
-                      <span className="text-slate-200">ai_whisperer</span>
-                    </div>
-                    <span className="font-mono text-slate-400">97.2</span>
-                  </li>
-                  <li className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-500 font-bold w-4">3</span>
-                      <div className="size-6 rounded-full bg-slate-700 bg-cover bg-center" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDsfqYNvYMwF6zPKdV1N4fZFtrG_0AtUP2GhzBLoqdt0BHVPZ7Ovk-UNoqOewU6WKXVDd67Hc4e4BsXeKtqOSXvzcnh03rOKOcZ4yMhrZEiuAmpKGhEIJ6fVl2wYqiUGwfS6F8LFlB4GX7VdmK2LjEyHxeZ4PmQdr73qvuIjGBVY7GO_59PUBv-IwegMCDKnVgM52gbKCF-e13Q1iKXfD9WfxsEOTtZysi6aPm0QtohCPkdldQwoSAdGaxwVe98x7AoMlR3T-dck62W")'}}></div>
-                      <span className="text-slate-200">neural_net</span>
-                    </div>
-                    <span className="font-mono text-slate-400">96.8</span>
-                  </li>
-                </ul>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-500">Strength:</span>
+                <span className="text-sm font-bold text-primary">{modelStrength.totalStrength}</span>
               </div>
             </div>
           </div>
@@ -401,37 +417,121 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">Why PoshPrompt?</h2>
-            <p className="text-slate-400 max-w-lg sm:max-w-2xl text-base sm:text-lg">Experience the future of prompt engineering with our premium, developer-focused platform.</p>
+            <p className="text-slate-400 max-w-lg sm:max-w-2xl text-base sm:text-lg">Experience the future of AI construction with our strategic resource management gameplay.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Feature 1 */}
             <div className="group flex flex-col gap-3 sm:gap-4 rounded-xl border border-border-dark bg-panel-dark p-6 sm:p-8 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
               <div className="size-10 sm:size-12 rounded-lg bg-background-dark border border-border-dark flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-background-dark transition-colors">
-                <span className="material-symbols-outlined text-xl sm:text-2xl">chat</span>
+                <span className="material-symbols-outlined text-xl sm:text-2xl">construction</span>
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Native Chat Interface</h3>
-                <p className="text-slate-400 leading-relaxed text-sm sm:text-base">Use your natural language skills in a familiar, IDE-like environment designed for rapid iteration and testing.</p>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Strategic Tool Combination</h3>
+                <p className="text-slate-400 leading-relaxed text-sm sm:text-base">Combine mini-model tools intelligently to create powerful AI solutions. Each tool costs prompts, so choose wisely.</p>
               </div>
             </div>
             {/* Feature 2 */}
             <div className="group flex flex-col gap-3 sm:gap-4 rounded-xl border border-border-dark bg-panel-dark p-6 sm:p-8 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
               <div className="size-10 sm:size-12 rounded-lg bg-background-dark border border-border-dark flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-background-dark transition-colors">
-                <span className="material-symbols-outlined text-xl sm:text-2xl">bolt</span>
+                <span className="material-symbols-outlined text-xl sm:text-2xl">psychology</span>
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Instant Evaluation</h3>
-                <p className="text-slate-400 leading-relaxed text-sm sm:text-base">Our proprietary AI scoring engine evaluates your outputs in milliseconds for accuracy, creativity, and safety.</p>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Resource Management</h3>
+                <p className="text-slate-400 leading-relaxed text-sm sm:text-base">Every build costs prompts. Manage your limited resources carefully to maximize your model's strength and score.</p>
               </div>
             </div>
             {/* Feature 3 */}
             <div className="group flex flex-col gap-3 sm:gap-4 rounded-xl border border-border-dark bg-panel-dark p-6 sm:p-8 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1">
               <div className="size-10 sm:size-12 rounded-lg bg-background-dark border border-border-dark flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-background-dark transition-colors">
-                <span className="material-symbols-outlined text-xl sm:text-2xl">trophy</span>
+                <span className="material-symbols-outlined text-xl sm:text-2xl">leaderboard</span>
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Cash Pools</h3>
-                <p className="text-slate-400 leading-relaxed text-sm sm:text-base">Top the daily and weekly leaderboards to win real cash rewards from our sponsored prize pools.</p>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Skill-Based Scoring</h3>
+                <p className="text-slate-400 leading-relaxed text-sm sm:text-base">Compete based on strategy and intelligence, not grinding. Your model's strength determines your ranking.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What PoshPrompt Is/Is Not Section */}
+      <section id="what-is-poshprompt" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-10 bg-[#0d0c0a]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">What PoshPrompt Is</h2>
+            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
+              Understanding the difference between our strategic AI-building game and other AI platforms.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
+            {/* What it IS */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-primary mb-6">PoshPrompt IS:</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 text-green-500 text-2xl">✅</span>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">A strategic AI construction game</h4>
+                    <p className="text-slate-400 text-sm">Build AI models using limited tools and compete based on how intelligently you combine them.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 text-green-500 text-2xl">✅</span>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">A resource management challenge</h4>
+                    <p className="text-slate-400 text-sm">Each build costs prompts. Each session is unpredictable. Each model is scored for strength.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 text-green-500 text-2xl">✅</span>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">A replayable AI meta-layer</h4>
+                    <p className="text-slate-400 text-sm">The smarter your strategy, the stronger your model. Every session offers new challenges.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 text-green-500 text-2xl">✅</span>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">Skill-based scoring</h4>
+                    <p className="text-slate-400 text-sm">Compete based on strategy and intelligence, not grinding or farming leaderboards.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* What it IS NOT */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-red-500 mb-6">PoshPrompt is NOT:</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 text-red-500 text-2xl">❌</span>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">A chatbot</h4>
+                    <p className="text-slate-400 text-sm">We're not another conversational AI or virtual assistant.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 text-red-500 text-2xl">❌</span>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">A GPT wrapper</h4>
+                    <p className="text-slate-400 text-sm">We're not just a frontend for existing language models.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 text-red-500 text-2xl">❌</span>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">A prompt playground</h4>
+                    <p className="text-slate-400 text-sm">We're not a simple tool for testing prompts without purpose.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 text-red-500 text-2xl">❌</span>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">A leaderboard farming app</h4>
+                    <p className="text-slate-400 text-sm">Success comes from strategic thinking, not from grinding or exploiting mechanics.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -442,9 +542,9 @@ export default function Home() {
       <section id="pricing" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-10 bg-background-dark">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Choose Your Plan</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Choose Your Prompts</h2>
             <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
-              Unlock your full potential with our flexible pricing plans. Start free and scale as you grow.
+              Every model build costs prompts. Choose the right package for your strategic gameplay style.
             </p>
           </div>
           
@@ -465,22 +565,22 @@ export default function Home() {
                   </div>
                   <p className="text-slate-400 text-sm mb-4">{pkg.description}</p>
                   <div className="text-xs text-primary font-medium">
-                    ${pkg.pricePerPrompt.toFixed(3)} per prompt
+                    {pkg.prompts} prompts for building models
                   </div>
                 </div>
                 
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-start gap-3">
                     <span className="material-symbols-outlined text-primary text-lg mt-0.5">check_circle</span>
-                    <span className="text-slate-300 text-sm">{pkg.prompts} prompts</span>
+                    <span className="text-slate-300 text-sm">{pkg.prompts} building prompts</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="material-symbols-outlined text-primary text-lg mt-0.5">check_circle</span>
-                    <span className="text-slate-300 text-sm">All challenges</span>
+                    <span className="text-slate-300 text-sm">All model challenges</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="material-symbols-outlined text-primary text-lg mt-0.5">check_circle</span>
-                    <span className="text-slate-300 text-sm">Priority support</span>
+                    <span className="text-slate-300 text-sm">Strategy support</span>
                   </li>
                 </ul>
                 
@@ -489,7 +589,7 @@ export default function Home() {
                     ? 'bg-primary hover:bg-amber-400 text-black shadow-primary/20' 
                     : 'border border-border-dark bg-background-dark text-white hover:bg-slate-700'
                 }`}>
-                  Choose {pkg.name.replace(' Pack', '')}
+                  Choose {pkg.name.replace(' Pack', '')} Prompts
                 </button>
               </div>
             ))}
@@ -498,16 +598,16 @@ export default function Home() {
           {/* Prompt Refill Section */}
           <div className="mt-16 text-center">
             <div className="bg-panel-dark border border-border-dark rounded-2xl p-8 max-w-2xl mx-auto">
-              <h3 className="text-2xl font-bold text-white mb-4">Need More Prompts?</h3>
+              <h3 className="text-2xl font-bold text-white mb-4">Need More Building Prompts?</h3>
               <p className="text-slate-400 text-base mb-6">
-                Refill your prompt balance anytime. Perfect for power users who need extra flexibility.
+                Refill your prompt balance anytime. Perfect for strategic builders who need extra flexibility for complex models.
               </p>
               <div className="flex items-center justify-center gap-4 mb-6">
                 <span className="text-3xl font-bold text-white">${PACKAGES[0].pricePerPrompt.toFixed(3)}</span>
-                <span className="text-slate-400 text-lg">per prompt (starting price)</span>
+                <span className="text-slate-400 text-lg">per building prompt (starting price)</span>
               </div>
               <button className="py-3 px-8 bg-panel-dark border border-primary hover:bg-primary hover:text-black rounded-lg transition-colors font-medium">
-                Buy Prompts
+                Buy Building Prompts
               </button>
             </div>
           </div>
@@ -520,13 +620,13 @@ export default function Home() {
                 <h3 className="text-xl font-bold text-white">Special Welcome Offer</h3>
               </div>
               <p className="text-slate-300 text-base mb-4">
-                New users get <span className="text-primary font-bold">5 free prompts</span> to start their journey!
+                New users get <span className="text-primary font-bold">5 free building prompts</span> to start their strategic journey!
               </p>
               <p className="text-slate-400 text-sm mb-6">
                 No credit card required. Try before you buy.
               </p>
               <button className="py-3 px-8 bg-primary hover:bg-amber-400 text-black rounded-lg transition-colors font-bold shadow-lg shadow-primary/20" onClick={() => router.push('/register')}>
-                Claim Free Prompts
+                Claim Free Building Prompts
               </button>
             </div>
           </div>
@@ -536,10 +636,10 @@ export default function Home() {
       {/* Bottom CTA */}
       <section className="py-16 sm:py-20 md:py-24 px-4 text-center">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-4 sm:mb-6">Ready to prove your skills?</h2>
-          <p className="text-slate-400 text-base sm:text-lg mb-8 sm:mb-10">Join the elite community of prompt engineers and start winning today.</p>
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-4 sm:mb-6">Ready to build your strategy?</h2>
+          <p className="text-slate-400 text-base sm:text-lg mb-8 sm:mb-10">Join the elite community of strategic AI builders and start outsmarting the competition today.</p>
           <button className="flex mx-auto cursor-pointer items-center justify-center rounded-lg h-12 sm:h-14 px-8 sm:px-10 bg-white text-background-dark hover:bg-slate-200 transition-all text-base sm:text-lg font-bold tracking-wide w-full sm:w-auto max-w-sm" onClick={() => router.push('/register')}>
-            Get Started for Free
+            Start Building Strategically
           </button>
         </div>
       </section>
