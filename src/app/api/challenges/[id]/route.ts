@@ -20,14 +20,47 @@ export async function GET(
       );
     }
 
-    // Parse the task JSON if it's stored as a string
-    const taskData = typeof challenge.task === 'string' 
-      ? JSON.parse(challenge.task)
-      : challenge.task;
+    const gameplay = typeof challenge.gameplay === 'object' && challenge.gameplay !== null ? challenge.gameplay : {};
+    const task = typeof challenge.task === 'string' ? JSON.parse(challenge.task) : {};
 
+    // Parse challenge data to match v2.0 structure
     const challengeData = {
       ...challenge,
-      task: taskData
+      // Convert old database structure to new v2.0 frontend structure
+      role: 'AI Assistant',
+      description: challenge.description,
+      training: {
+        rounds: (gameplay as any).maxTurns || 5,
+        maxWordsPerPrompt: 200,
+        timePerRound: (gameplay as any).timeLimitSeconds || 300,
+        constraints: {
+          required: (task as any).constraints?.required || [],
+          forbidden: (task as any).constraints?.forbidden || [],
+          optional: (task as any).constraints?.optional || []
+        }
+      },
+      stressTest: {
+        numCases: 5,
+        testTypes: ['adversarial', 'edge_case', 'contradictory']
+      },
+      scoring: challenge.scoring || {
+        totalScore: 100,
+        passingScore: 70,
+        breakdown: {
+          consistency: 30,
+          output_quality: 25,
+          robustness: 25,
+          creativity: 10,
+          brevity: 10
+        }
+      },
+      rewards: challenge.rewards || {
+        base_xp: 50,
+        base_coins: 10
+      },
+      estimatedTime: 25,
+      prerequisites: [],
+      learningObjectives: []
     };
 
     return NextResponse.json({

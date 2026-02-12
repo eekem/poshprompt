@@ -82,16 +82,17 @@ CREATE TABLE "challenge" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "gameType" TEXT NOT NULL,
-    "difficulty" TEXT NOT NULL,
-    "modelType" TEXT NOT NULL,
-    "modelName" TEXT NOT NULL,
-    "task" JSONB NOT NULL,
-    "gameplay" JSONB NOT NULL,
-    "scoring" JSONB NOT NULL,
-    "rewards" JSONB NOT NULL,
+    "version" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "gameType" TEXT,
+    "difficulty" TEXT,
+    "modelType" TEXT,
+    "modelName" TEXT,
+    "task" JSONB,
+    "gameplay" JSONB,
+    "scoring" JSONB,
+    "rewards" JSONB,
     "maxXpPerTurn" INTEGER NOT NULL DEFAULT 100,
     "minScore" INTEGER NOT NULL DEFAULT 0,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
@@ -133,6 +134,20 @@ CREATE TABLE "message" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "message_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "building_tools_session" (
+    "id" TEXT NOT NULL,
+    "chatId" TEXT NOT NULL,
+    "challengeId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "options" JSONB NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "building_tools_session_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -280,6 +295,70 @@ CREATE TABLE "reward_eligibility" (
     CONSTRAINT "reward_eligibility_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "building_session" (
+    "id" TEXT NOT NULL,
+    "challengeId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "building_session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "session_category" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "session_category_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "session_tool" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "icon" TEXT NOT NULL,
+    "promptCost" INTEGER NOT NULL,
+    "categoryId" TEXT NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "session_tool_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "session_point_map" (
+    "id" TEXT NOT NULL,
+    "baseMultiplier" DOUBLE PRECISION NOT NULL,
+    "categoryDiversityBonus" INTEGER NOT NULL,
+    "maxStrength" INTEGER NOT NULL,
+    "synergyRules" JSONB NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "session_point_map_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "build" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "challengeId" TEXT NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "selectedTools" JSONB NOT NULL,
+    "strength" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "build_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
@@ -311,6 +390,18 @@ CREATE INDEX "message_chatId_idx" ON "message"("chatId");
 CREATE INDEX "message_type_idx" ON "message"("type");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "building_tools_session_chatId_key" ON "building_tools_session"("chatId");
+
+-- CreateIndex
+CREATE INDEX "building_tools_session_chatId_idx" ON "building_tools_session"("chatId");
+
+-- CreateIndex
+CREATE INDEX "building_tools_session_challengeId_idx" ON "building_tools_session"("challengeId");
+
+-- CreateIndex
+CREATE INDEX "building_tools_session_userId_idx" ON "building_tools_session"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "payment_reference_key" ON "payment"("reference");
 
 -- CreateIndex
@@ -337,6 +428,9 @@ CREATE UNIQUE INDEX "weekly_rotation_week_key" ON "weekly_rotation"("week");
 -- CreateIndex
 CREATE UNIQUE INDEX "reward_eligibility_miniModelId_key" ON "reward_eligibility"("miniModelId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "session_point_map_sessionId_key" ON "session_point_map"("sessionId");
+
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -351,6 +445,15 @@ ALTER TABLE "chat" ADD CONSTRAINT "chat_userId_fkey" FOREIGN KEY ("userId") REFE
 
 -- AddForeignKey
 ALTER TABLE "message" ADD CONSTRAINT "message_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "chat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "building_tools_session" ADD CONSTRAINT "building_tools_session_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "chat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "building_tools_session" ADD CONSTRAINT "building_tools_session_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "building_tools_session" ADD CONSTRAINT "building_tools_session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "challenge_prizes" ADD CONSTRAINT "challenge_prizes_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -396,3 +499,30 @@ ALTER TABLE "reward_eligibility" ADD CONSTRAINT "reward_eligibility_challengeId_
 
 -- AddForeignKey
 ALTER TABLE "reward_eligibility" ADD CONSTRAINT "reward_eligibility_miniModelId_fkey" FOREIGN KEY ("miniModelId") REFERENCES "mini_model"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "building_session" ADD CONSTRAINT "building_session_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "building_session" ADD CONSTRAINT "building_session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "session_category" ADD CONSTRAINT "session_category_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "building_session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "session_tool" ADD CONSTRAINT "session_tool_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "session_category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "session_tool" ADD CONSTRAINT "session_tool_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "building_session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "session_point_map" ADD CONSTRAINT "session_point_map_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "building_session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "build" ADD CONSTRAINT "build_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "build" ADD CONSTRAINT "build_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "build" ADD CONSTRAINT "build_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "building_session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

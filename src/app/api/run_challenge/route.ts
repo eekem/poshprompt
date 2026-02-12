@@ -1,39 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { InferenceClient } from '@huggingface/inference';
+import { Groq } from 'groq-sdk';
 import { prisma } from '@/app/lib/prisma';
 
-
-// Initialize Hugging Face Inference Client
-const hf = new InferenceClient(process.env.HUGGINGFACE_API_KEY);
+// Initialize Groq client
+const groq = new Groq({
+  apiKey: process.env.HUGGINGFACE_API_KEY // Using same env var for Groq API key
+});
 
 // Type definitions based on the new schema
-type GameType = 'mini_model_training' | 'image' | 'text' | 'transformation' | 'refinement' | 'evaluation';
+type GameType = 'mini_model_training' | 'text' | 'transformation' | 'refinement' | 'evaluation';
 type ScoringMode = 'robustness_score' | 'constraint_based' | 'quality_score' | 'refinement_score' | 'ranking';
-type ModelType = 'image_generation' | 'text_generation';
+type ModelType = 'text_generation';
 type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 type TestType = 'adversarial' | 'edge_case' | 'contradictory' | 'extreme_constraint' | 'out_of_distribution' | 'safety_critical';
 
 interface Challenge {
   id: string;
   title: string;
-  description: string;
-  gameType: GameType;
+  role: string;
   difficulty: Difficulty;
-  modelType: ModelType;
-  modelName: string;
-  task: {
-    objective: string;
+  description: string;
+  estimatedTime: number;
+  prerequisites?: string[];
+  learningObjectives?: string[];
+  training: {
+    rounds: number;
+    maxWordsPerPrompt: number;
+    timePerRound: number;
     constraints: {
       required: string[];
       forbidden: string[];
       optional: string[];
     };
   };
-  gameplay: {
-    turnBased: boolean;
-    maxTurns?: number;
-    timeLimitSeconds: number;
-    scoringMode: ScoringMode;
+  stressTest: {
+    numCases: number;
+    testTypes: string[];
   };
   scoring: {
     totalScore: number;
@@ -44,7 +46,6 @@ interface Challenge {
       robustness: number;
       creativity: number;
       brevity: number;
-      [key: string]: number;
     };
   };
   rewards: {
@@ -82,6 +83,8 @@ interface ChatRequest {
   turnNumber?: number;
   previousOutputs?: string[];
   phase?: 'training' | 'stress_test' | 'results';
+  isBuildingTool?: boolean;
+  toolData?: any;
 }
 
 interface StressTestRequest {
@@ -127,6 +130,14 @@ interface ChatResponse {
   phase?: 'training' | 'stress_test' | 'results';
   canProceedToStressTest?: boolean;
   trainingComplete?: boolean;
+  trainingProgress?: {
+    constraintAdherence: number;
+    roleConsistency: number;
+    forbiddenAvoidance: number;
+    overallStrength: number;
+    improvementAreas: string[];
+    strengths: string[];
+  };
 }
 
 interface StressTestResponse {
@@ -153,8 +164,8 @@ function calculateScore(
   previousOutput?: string,
   turnNumber?: number
 ): { score: number; breakdown: ScoreBreakdown; score_text: string } {
-  const { task, scoring, gameplay } = challenge;
-  const { constraints } = task;
+  const { training, scoring } = challenge;
+  const { constraints } = training;
   const breakdown: ScoreBreakdown = {
     consistency: 0,
     output_quality: 0,
@@ -174,7 +185,7 @@ function calculateScore(
   const feedback: string[] = [];
 
   // Check required constraints
-  const requiredMet = constraints.required.filter(constraint => 
+  const requiredMet = constraints.required.filter((constraint: string) => 
     output.toLowerCase().includes(constraint.toLowerCase())
   ).length;
   
@@ -189,7 +200,7 @@ function calculateScore(
   }
 
   // Check forbidden constraints
-  const forbiddenViolations = constraints.forbidden.filter(constraint => 
+  const forbiddenViolations = constraints.forbidden.filter((constraint: string) => 
     output.toLowerCase().includes(constraint.toLowerCase())
   ).length;
   
@@ -342,6 +353,7 @@ async function checkRewardEligibility(
 
 // Run stress test suite for a trained mini-model (context-based evaluation)
 async function runStressTest(request: StressTestRequest): Promise<StressTestResponse> {
+  console.log('runStressTest called with:', request);
   const { chatId, userId, systemPrompt, finalContext } = request;
 
   // Get chat and challenge details
@@ -405,7 +417,7 @@ async function runStressTest(request: StressTestRequest): Promise<StressTestResp
       ].join('\n\n');
 
       // Generate response using the same base model with context injection
-      const output = await generateOutput(fullContext, chat.challenge as any, []);
+      const output = await generateOutput(chatId, fullContext, chat.challenge as any);
 
       // Calculate score for this test case
       const { score, breakdown } = calculateScore(output, chat.challenge as any);
@@ -567,81 +579,226 @@ async function runStressTest(request: StressTestRequest): Promise<StressTestResp
   };
 }
 
-// Generate AI output using Hugging Face Inference API
+// Generate AI output using Groq with database context
 async function generateOutput(
+  chatId: string,
   prompt: string,
   challenge: Challenge,
-  previousOutputs?: string[]
+  isBuildingTool: boolean = false,
+  toolData?: any
 ): Promise<string> {
-  const { gameType, modelType, modelName, task } = challenge;
+  const { training, scoring } = challenge;
   
-  // Use recommended model based on the improvement.yaml specifications
-  const baseModel = modelName || 'Qwen/Qwen2.5-32B-Instruct';
+  // Fetch previous AI outputs from database for context accumulation
+  const previousMessages = await prisma.message.findMany({
+    where: {
+      chatId: chatId,
+      type: 'ai'
+    },
+    orderBy: {
+      turnNumber: 'asc'
+    },
+    select: {
+      content: true,
+      turnNumber: true
+    }
+  });
+  
+  const previousOutputs = previousMessages.map(msg => msg.content);
+  
+  // Use official Groq production models
+  const baseModel = 'llama-3.1-8b-instant'; // Fast, reliable production model
+  const fallbackModels = [
+    'llama-3.3-70b-versatile', // More powerful
+    'gpt-oss-120b', // Large model for complex tasks
+    'gpt-oss-20b' // Medium model
+  ];
   
   // Build context-aware prompt with accumulated training context
   let fullPrompt = `You are a trained AI assistant. Use the following context to guide your response:\n\n`;
-  fullPrompt += `Task: ${task.objective}\n`;
+  fullPrompt += `Role: ${challenge.role}\n`;
+  fullPrompt += `Objective: ${challenge.description}\n`;
   fullPrompt += `Constraints:\n`;
-  fullPrompt += `- Required: ${task.constraints.required.join(', ')}\n`;
-  if (task.constraints.forbidden.length > 0) {
-    fullPrompt += `- Forbidden: ${task.constraints.forbidden.join(', ')}\n`;
+  fullPrompt += `- Required: ${training.constraints.required.join(', ')}\n`;
+  if (training.constraints.forbidden.length > 0) {
+    fullPrompt += `- Forbidden: ${training.constraints.forbidden.join(', ')}\n`;
   }
-  if (task.constraints.optional.length > 0) {
-    fullPrompt += `- Optional: ${task.constraints.optional.join(', ')}\n`;
+  if (training.constraints.optional.length > 0) {
+    fullPrompt += `- Optional: ${training.constraints.optional.join(', ')}\n`;
   }
   
-  // Add previous outputs for refinement challenges (context accumulation)
-  if (gameType === 'refinement' && previousOutputs && previousOutputs.length > 0) {
+  // Add previous outputs for context accumulation
+  if (previousOutputs && previousOutputs.length > 0) {
     fullPrompt += `\nPrevious training rounds:\n`;
     previousOutputs.forEach((output, index) => {
       fullPrompt += `Round ${index + 1}: ${output}\n`;
     });
-    fullPrompt += `\nBuild upon the previous training to improve your response.\n`;
+    fullPrompt += `\nBuild upon previous training to improve your response.\n`;
+  }
+
+  // Add building tool specific context
+  if (isBuildingTool && toolData) {
+    fullPrompt += `\nBUILDING TOOL ACTIVATED: ${toolData.title}\n`;
+    fullPrompt += `Tool Description: ${toolData.description}\n`;
+    fullPrompt += `Impact Level: ${toolData.impactScore}/10\n`;
+    fullPrompt += `Difficulty: ${toolData.difficulty}\n`;
+    fullPrompt += `Focus on this specific training aspect while maintaining overall consistency.\n`;
   }
   
-  // Add evaluation context for evaluation challenges
-  if (gameType === 'evaluation') {
-    fullPrompt += `\nYou are evaluating multiple AI outputs. Please rank them from best to worst and explain your reasoning.\n`;
+  fullPrompt += `\nCurrent user input: ${prompt}\n\n`;
+
+  // For building tools, request JSON response with scoring
+  if (isBuildingTool) {
+    fullPrompt += `Generate a JSON response with the following structure:
+{
+  "response": "Your AI response following the trained context",
+  "trainingProgress": {
+    "constraintAdherence": number (0-100),
+    "roleConsistency": number (0-100),
+    "forbiddenAvoidance": number (0-100),
+    "overallStrength": number (0-100),
+    "improvementAreas": ["area1", "area2"],
+    "strengths": ["strength1", "strength2"]
+  },
+  "scoreBreakdown": {
+    "consistency": number (0-30),
+    "output_quality": number (0-25),
+    "robustness": number (0-25),
+    "creativity": number (0-10),
+    "brevity": number (0-10)
   }
-  
-  fullPrompt += `\nCurrent user input: ${prompt}\n\nGenerate response following your trained context:`;
+}
+
+Focus on the building tool's specific impact area while maintaining overall training quality.`;
+  } else {
+    fullPrompt += `Generate response following your trained context:`;
+  }
 
   try {
-    if (modelType === 'image_generation') {
-      // For image generation, use textToImage with HF Inference provider
-      const response = await hf.textToImage({
-        model: 'stabilityai/stable-diffusion-3-5-large', // Use specific image model
-        inputs: fullPrompt,
-        provider: 'hf-inference',
-      });
-      
-      // Convert image to base64 for storage
-      const base64 = Buffer.from(response).toString('base64');
-      return `data:image/png;base64,${base64}`;
-    } else {
-      // For text generation, use the recommended Qwen model
-      const response = await hf.chatCompletion({
-        model: baseModel,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful AI assistant that has been trained through prompt engineering and context accumulation. Follow the provided context precisely.'
-          },
-          {
-            role: 'user',
-            content: fullPrompt
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
-      });
-      
-      return response.choices[0]?.message?.content || 'No response generated';
+    // Use Groq directly for best performance
+    console.log('Attempting to generate output with Groq model:', baseModel);
+    console.log('Groq API Key present:', !!process.env.HUGGINGFACE_API_KEY);
+    
+    const response = await groq.chat.completions.create({
+      model: baseModel,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful AI assistant that has been trained through prompt engineering and context accumulation. Follow provided context precisely.'
+        },
+        {
+          role: 'user',
+          content: fullPrompt
+        }
+      ],
+      max_tokens: isBuildingTool ? 800 : 500,
+      temperature: 0.7,
+      response_format: isBuildingTool ? { type: 'json_object' } : undefined
+    });
+    
+    const result = response.choices[0]?.message?.content || 'No response generated';
+    
+    // For building tools, validate and extract the JSON response
+    if (isBuildingTool) {
+      try {
+        const parsed = JSON.parse(result);
+        return result; // Return the full JSON for processing
+      } catch (parseError) {
+        console.error('Failed to parse JSON response from building tool:', parseError);
+        // Fallback to regular response format
+        return generateFallbackResponse(prompt, challenge, previousOutputs);
+      }
     }
+    
+    return result;
   } catch (error) {
-    console.error('Error generating output:', error);
-    throw new Error(`Failed to generate output: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Error generating output with primary model:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    
+    // Check if it's an API key issue
+    if (!process.env.HUGGINGFACE_API_KEY) {
+      console.log('API key not configured, providing fallback response');
+      return generateFallbackResponse(prompt, challenge, previousOutputs);
+    }
+    
+    // Check if it's a provider availability issue
+    if (error instanceof Error && error.message.includes('No Inference Provider available')) {
+      console.log('No inference providers available, providing fallback response');
+      return generateFallbackResponse(prompt, challenge, previousOutputs);
+    }
+    
+    // Try fallback models
+    for (const fallbackModel of fallbackModels) {
+      try {
+        console.log(`Trying fallback model: ${fallbackModel}`);
+        const fallbackResponse = await groq.chat.completions.create({
+          model: fallbackModel,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful AI assistant. Follow the provided context precisely.'
+            },
+            {
+              role: 'user',
+              content: fullPrompt
+            }
+          ],
+          max_tokens: isBuildingTool ? 800 : 500,
+          temperature: 0.7,
+          response_format: isBuildingTool ? { type: 'json_object' } : undefined
+        });
+        
+        const result = fallbackResponse.choices[0]?.message?.content || 'No response generated';
+        console.log(`Successfully generated response with fallback model: ${fallbackModel}`);
+        
+        // For building tools, validate JSON
+        if (isBuildingTool) {
+          try {
+            JSON.parse(result);
+            return result;
+          } catch (parseError) {
+            console.error('Failed to parse JSON from fallback model:', parseError);
+            continue; // Try next fallback model
+          }
+        }
+        
+        return result;
+      } catch (fallbackError) {
+        console.error(`Fallback model ${fallbackModel} also failed:`, fallbackError);
+        continue;
+      }
+    }
+    
+    // If all models fail, provide a fallback response
+    console.log('All models failed, providing fallback response');
+    return generateFallbackResponse(prompt, challenge, previousOutputs);
   }
+}
+
+// Fallback response generator when AI is unavailable
+function generateFallbackResponse(
+  prompt: string,
+  challenge: Challenge,
+  previousOutputs?: string[]
+): string {
+  const responses = [
+    `I understand you want me to respond as ${challenge.role}. Based on your input "${prompt}", I would provide a response that follows the constraints: ${challenge.training.constraints.required.join(', ')}.`,
+    `As a ${challenge.role}, I acknowledge your request: "${prompt}". I need to ensure my response meets the required constraints while avoiding forbidden elements.`,
+    `I'm processing your input "${prompt}" in the context of ${challenge.description}. My response will follow the established training pattern and constraints.`
+  ];
+  
+  // Add some variation based on previous outputs
+  if (previousOutputs && previousOutputs.length > 0) {
+    responses.push(
+      `Building on our previous training, I'll respond to "${prompt}" with improved consistency and adherence to the ${challenge.role} persona.`
+    );
+  }
+  
+  return responses[Math.floor(Math.random() * responses.length)];
 }
 
 // Main API route handler
@@ -650,7 +807,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
     const body = await request.json();
     
     // Check if this is a stress test request
+    console.log('Request body received:', body);
+    console.log('Stress test condition check:', {
+      phase: body.phase,
+      isStressTest: body.phase === 'stress_test',
+      hasSystemPrompt: !!body.systemPrompt,
+      hasFinalContext: !!body.finalContext,
+      systemPromptLength: body.systemPrompt?.length,
+      finalContextLength: body.finalContext?.length
+    });
+    
     if (body.phase === 'stress_test' && body.systemPrompt && body.finalContext) {
+      console.log('Processing as stress test request');
       const stressTestRequest: StressTestRequest = {
         chatId: body.chatId,
         userId: body.userId,
@@ -662,6 +830,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
       return NextResponse.json(result);
     }
 
+    console.log('Processing as regular training request');
     // Regular training phase request
     const chatRequest: ChatRequest = {
       userId: body.userId,
@@ -670,10 +839,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
       chatId: body.chatId,
       turnNumber: body.turnNumber || 1,
       previousOutputs: body.previousOutputs || [],
-      phase: body.phase || 'training'
+      phase: body.phase || 'training',
+      isBuildingTool: body.isBuildingTool || false,
+      toolData: body.toolData
     };
 
-    const { userId, challengeId, prompt, chatId, turnNumber = 1, previousOutputs = [] } = chatRequest;
+    const { userId, challengeId, prompt, chatId, turnNumber = 1, previousOutputs = [], isBuildingTool = false, toolData } = chatRequest;
 
     // Validate input
     if (!userId || !challengeId || !prompt) {
@@ -715,10 +886,48 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
       );
     }
 
-    // Parse challenge data (assuming it's stored as JSON)
-    const challengeData: Challenge = typeof challenge.task === 'string' 
-      ? JSON.parse(challenge.task as any)
-      : challenge as any;
+    // Parse challenge data to match v2.0 structure (same as challenges API)
+const gameplay = typeof challenge.gameplay === 'object' && challenge.gameplay !== null ? challenge.gameplay : {};
+const task = typeof challenge.task === 'string' ? JSON.parse(challenge.task) : {};
+
+const challengeData: any = {
+  ...challenge,
+  // Convert old database structure to new v2.0 frontend structure
+  role: 'AI Assistant',
+  description: challenge.description,
+  training: {
+    rounds: (gameplay as any).maxTurns || 5,
+    maxWordsPerPrompt: 200,
+    timePerRound: (gameplay as any).timeLimitSeconds || 300,
+    constraints: {
+      required: (task as any).constraints?.required || [],
+      forbidden: (task as any).constraints?.forbidden || [],
+      optional: (task as any).constraints?.optional || []
+    }
+  },
+  stressTest: {
+    numCases: 5,
+    testTypes: ['adversarial', 'edge_case', 'contradictory']
+  },
+  scoring: (challenge.scoring as any) || {
+    totalScore: 100,
+    passingScore: 70,
+    breakdown: {
+      consistency: 30,
+      output_quality: 25,
+      robustness: 25,
+      creativity: 10,
+      brevity: 10
+    }
+  },
+  rewards: (challenge.rewards as any) || {
+    base_xp: 50,
+    base_coins: 10
+  },
+  estimatedTime: 25,
+  prerequisites: [],
+  learningObjectives: []
+};
 
     // Get or create chat session
     let chat;
@@ -750,14 +959,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
         data: {
           chatId: chat.id,
           type: 'system',
-          content: `Welcome to the ${challengeData.title} challenge. Your goal: ${challengeData.task.objective}.\n\nConstraints:\n${challengeData.task.constraints.required.map(c => `• ${c}`).join('\n')}\n${challengeData.task.constraints.forbidden.length > 0 ? `\nForbidden:\n${challengeData.task.constraints.forbidden.map(c => `• ${c}`).join('\n')}` : ''}`,
+          content: `Welcome to ${challengeData.title} challenge. Your goal: ${challengeData.description}.\n\nConstraints:\n${challengeData.training.constraints.required.map((c: string) => `• ${c}`).join('\n')}\n${challengeData.training.constraints.forbidden.length > 0 ? `\nForbidden:\n${challengeData.training.constraints.forbidden.map((c: string) => `• ${c}`).join('\n')}` : ''}`,
           turnNumber: 0,
         }
       });
     }
 
-    // Validate turn number for turn-based challenges
-    if (challengeData.gameplay.turnBased && turnNumber > (challengeData.gameplay.maxTurns || 5)) {
+    // Validate turn number for training rounds
+    if (turnNumber > (challengeData.training.rounds || 5)) {
       return NextResponse.json(
         { error: 'Maximum turns exceeded' },
         { status: 400 }
@@ -776,24 +985,66 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
     });
 
     // Generate AI output
-    const output = await generateOutput(prompt, challengeData, previousOutputs);
+    const output = await generateOutput(chat.id, prompt, challengeData, isBuildingTool, toolData);
+
+    // Parse JSON response for building tools
+    let parsedOutput = null;
+    let trainingProgress = undefined;
+    
+    if (isBuildingTool) {
+      try {
+        parsedOutput = JSON.parse(output);
+        trainingProgress = parsedOutput.trainingProgress;
+      } catch (error) {
+        console.error('Failed to parse building tool JSON response:', error);
+        // Use fallback parsing
+        parsedOutput = {
+          response: output,
+          trainingProgress: {
+            constraintAdherence: 50,
+            roleConsistency: 50,
+            forbiddenAvoidance: 50,
+            overallStrength: 50,
+            improvementAreas: ['Response parsing failed'],
+            strengths: []
+          },
+          scoreBreakdown: {
+            consistency: 15,
+            output_quality: 12,
+            robustness: 12,
+            creativity: 5,
+            brevity: 5
+          }
+        };
+        trainingProgress = parsedOutput.trainingProgress;
+      }
+    }
+
+    // Use the actual response text for scoring
+    const responseText = isBuildingTool && parsedOutput ? parsedOutput.response : output;
 
     // Calculate score
     const previousOutput = previousOutputs.length > 0 ? previousOutputs[previousOutputs.length - 1] : undefined;
-    const { score, breakdown, score_text } = calculateScore(output, challengeData, previousOutput, turnNumber);
+    const { score, breakdown, score_text } = calculateScore(responseText, challengeData, previousOutput, turnNumber);
+    
+    // Ensure score is a valid number
+    const validScore = isNaN(score) || score === null ? 0 : Math.round(score);
+    
+    // Debug logging
+    console.log('Score calculated:', { score: validScore, earnedXp: 'calculating...', chatTotalScore: chat.totalScore });
 
     // Calculate XP based on score and challenge difficulty with validation
     const baseXp = challengeData.rewards.base_xp || 0;
     let earnedXp: number;
     
     // Check if score meets minimum requirement
-    if (score < challengeData.minScore) {
+    if (validScore < (challengeData.minScore || 0)) {
       // Score too low, no XP awarded
       earnedXp = 0;
     } else {
       // Calculate XP and cap at maximum per turn
-      let calculatedXp = Math.round((score / 100) * baseXp);
-      earnedXp = Math.min(calculatedXp, challengeData.maxXpPerTurn);
+      let calculatedXp = Math.round((validScore / 100) * baseXp);
+      earnedXp = Math.min(calculatedXp, challengeData.maxXpPerTurn || baseXp);
     }
 
     // Add AI message
@@ -801,24 +1052,43 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
       data: {
         chatId: chat.id,
         type: 'ai',
-        content: output,
-        output: output,
-        score,
-        breakdown: breakdown,
+        content: responseText,
+        output: responseText,
+        score: validScore,
+        breakdown: isBuildingTool && parsedOutput?.scoreBreakdown ? parsedOutput.scoreBreakdown : breakdown,
         turnNumber,
       }
     });
 
     // Update chat session with new totals
-    const updatedChat = await prisma.chat.update({
-      where: { id: chat.id },
-      data: {
-        currentTurn: turnNumber + 1,
-        totalScore: chat.totalScore + score,
-        earnedXp: chat.earnedXp + earnedXp,
-        updatedAt: new Date(),
-      }
+    console.log('About to update chat:', {
+      chatId: chat.id,
+      currentScore: validScore,
+      currentTotalScore: chat.totalScore,
+      currentEarnedXp: chat.earnedXp,
+      newEarnedXp: earnedXp
     });
+    
+    try {
+      const updatedChat = await prisma.chat.update({
+        where: { id: chat.id },
+        data: {
+          currentTurn: turnNumber + 1,
+          totalScore: (chat.totalScore || 0) + validScore,
+          earnedXp: (chat.earnedXp || 0) + (earnedXp || 0),
+          updatedAt: new Date(),
+        }
+      });
+      
+      console.log('Chat updated successfully:', updatedChat.id);
+    } catch (dbError) {
+      console.error('Database update failed:', dbError);
+      throw new Error(`Failed to update chat: ${dbError instanceof Error ? dbError.message : 'Unknown error'}`);
+    }
+
+    // Determine if training is complete and if user can proceed to stress test
+    const trainingComplete = turnNumber >= (challengeData.training.rounds || 5);
+    const canProceedToStressTest = trainingComplete && ((chat.totalScore || 0) + validScore) >= (challengeData.scoring.passingScore || 70);
 
     // Deduct one prompt from user and update earnedXps
     await prisma.user.update({
@@ -829,33 +1099,25 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
         },
         earnedXps: {
           increment: earnedXp, // Add earned XP to user's total
-        },
-      },
+        }
+      }
     });
 
-    // Check if training is complete
-    const trainingComplete = challengeData.gameplay.turnBased && 
-                           turnNumber >= (challengeData.gameplay.maxTurns || 5);
-
-    // Determine if user can proceed to stress test
-    const canProceedToStressTest = trainingComplete && 
-                                  updatedChat.totalScore >= (challengeData.scoring.passingScore || 70);
-
-    // Return response
-    const response: ChatResponse = {
+    const response = {
       chatId: chat.id,
       messageId: aiMessage.id,
-      output,
+      output: responseText,
       score_text,
-      breakdown,
+      breakdown: isBuildingTool && parsedOutput?.scoreBreakdown ? parsedOutput.scoreBreakdown : breakdown,
       turnNumber,
-      totalScore: updatedChat.totalScore,
-      earnedXp: updatedChat.earnedXp,
+      totalScore: (chat.totalScore || 0) + validScore,
+      earnedXp,
       remainingPrompts: user.prompts - 1, // Include remaining prompts count
       phase: trainingComplete ? 'stress_test' : 'training',
       canProceedToStressTest,
-      trainingComplete
-    };
+      trainingComplete,
+      trainingProgress
+    } as ChatResponse;
 
     return NextResponse.json(response);
 

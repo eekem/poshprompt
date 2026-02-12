@@ -31,6 +31,9 @@ model User {
   fingerprints    UserFingerprint[]
   miniModels      MiniModel[]
   publications    MiniModelPublication[]
+  buildingToolsSessions BuildingToolsSession[]
+  buildingSessions BuildingSession[]
+  builds          Build[]
 
   @@map("user")
 }
@@ -94,30 +97,39 @@ model Jwks {
 }
 
 model Challenge {
-  id           String   @id @default(cuid())
-  title        String
-  description  String
-  gameType     String
-  difficulty   String
-  modelType    String
-  modelName    String
-  task         Json
-  gameplay     Json
-  scoring      Json
-  rewards      Json
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  version       Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Legacy fields for backward compatibility
+  gameType     String?
+  difficulty   String?
+  modelType    String?
+  modelName    String?
+  task         Json?
+  gameplay     Json?
+  scoring      Json?
+  rewards      Json?
   maxXpPerTurn Int      @default(100)
   minScore     Int      @default(0)
   isActive     Boolean  @default(true)
   isFeatured   Boolean  @default(false)
-  week         String?  // For weekly rotation (e.g., "2026-W07")
+  week         String?
   
   // New evaluation system fields
-  rewardZoneType String  @default("top_n") // "top_n" or "top_percentile"
-  rewardZoneValue Int   @default(3) // N value for top_n or percentile for top_percentile
-  totalPrizePool Float? @default(80.0) // Total prize pool for this challenge
+  rewardZoneType String  @default("top_n")
+  rewardZoneValue Int   @default(3)
+  totalPrizePool Float? @default(80.0)
   
+  // Relationships
+  builds          Build[]
+  buildingSessions BuildingSession[]
+  buildingToolsSessions BuildingToolsSession[]
+  
+  // Legacy relationships
   chats        Chat[]
   stressTests  StressTest[]
   miniModels   MiniModel[]
@@ -143,6 +155,7 @@ model Chat {
   messages    Message[]
   miniModel   MiniModel?
   stressResults StressTestResult[]
+  buildingToolsSession BuildingToolsSession?
 
   @@index([userId])
   @@index([challengeId])
@@ -165,6 +178,25 @@ model Message {
   @@index([chatId])
   @@index([type])
   @@map("message")
+}
+
+model BuildingToolsSession {
+  id          String   @id @default(cuid())
+  chatId      String   @unique
+  challengeId String
+  userId      String
+  options     Json     // Store the 6 building tool options
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([challengeId])
+  @@index([userId])
+  @@map("building_tools_session")
 }
 
 model ChallengePrizes {
@@ -262,6 +294,7 @@ model MiniModel {
   chatId         String   @unique
   title          String
   description    String?
+  image          String?
   systemPrompt   String
   finalScore     Float
   robustnessScore Float
@@ -328,4 +361,82 @@ model RewardEligibility {
   miniModel   MiniModel @relation(fields: [miniModelId], references: [id], onDelete: Cascade)
 
   @@map("reward_eligibility")
+}
+
+// New models for session-based building system
+
+model BuildingSession {
+  id          String   @id @default(cuid())
+  challengeId String
+  userId      String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Session-specific generated content
+  categories  SessionCategory[]
+  pointMap    SessionPointMap?
+  builds      Build[]
+  tools       SessionTool[]
+  
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("building_session")
+}
+
+model SessionCategory {
+  id          String   @id @default(uuid())
+  slug        String
+  title       String
+  session     BuildingSession @relation(fields: [sessionId], references: [id])
+  sessionId   String
+  tools       SessionTool[]
+  createdAt   DateTime @default(now())
+
+  @@map("session_category")
+}
+
+model SessionTool {
+  id          String   @id @default(uuid())
+  slug        String
+  title       String
+  description String
+  icon        String
+  promptCost  Int
+  category    SessionCategory @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  session     BuildingSession @relation(fields: [sessionId], references: [id])
+  sessionId   String
+  createdAt   DateTime @default(now())
+
+  @@map("session_tool")
+}
+
+model SessionPointMap {
+  id                    String   @id @default(uuid())
+  baseMultiplier        Float
+  categoryDiversityBonus Int
+  maxStrength           Int
+  synergyRules          Json
+  session               BuildingSession @relation(fields: [sessionId], references: [id])
+  sessionId             String   @unique
+  createdAt             DateTime @default(now())
+
+  @@map("session_point_map")
+}
+
+model Build {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  challenge     Challenge @relation(fields: [challengeId], references: [id])
+  challengeId   String
+  session       BuildingSession @relation(fields: [sessionId], references: [id])
+  sessionId     String
+  selectedTools Json
+  strength      Float
+  createdAt     DateTime @default(now())
+
+  @@map("build")
 }
