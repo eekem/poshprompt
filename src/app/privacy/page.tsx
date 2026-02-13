@@ -1,5 +1,12 @@
+import { createMetadata } from "@/lib/seo";
 import Layout from "@/components/Layout";
 import Link from "next/link";
+
+export const metadata = createMetadata({
+  title: "Privacy Policy",
+  description: "Learn how PoshPrompt protects your privacy and handles your data.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

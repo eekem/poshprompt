@@ -1,5 +1,12 @@
+import { createMetadata } from "@/lib/seo";
 import Layout from "@/components/Layout";
 import Link from "next/link";
+
+export const metadata = createMetadata({
+  title: "Terms of Service",
+  description: "Read PoshPrompt's terms of service and user agreement.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

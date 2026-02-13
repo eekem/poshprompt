@@ -5,7 +5,7 @@ Disallow: /api/
 Disallow: /admin/
 
 # Host
-Host: https://poshprompt.com
+Host: "http://localhost:3000" # Your APP URL
 
 # Sitemaps
-Sitemap: https://poshprompt.com/sitemap.xml
+Sitemap: "http://localhost:3000" # Your APP URL/sitemap.xml
