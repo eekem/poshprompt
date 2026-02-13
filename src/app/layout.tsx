@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     siteName: 'PoshPrompt',
     images: [
       {
-        url: '/seo.png',
+        url: 'https://poshprompt.com/seo.png',
         width: 1200,
         height: 630,
         alt: 'PoshPrompt - Engineer smarter prompts. Build unstoppable mini-models.',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'PoshPrompt - Engineer smarter prompts. Build unstoppable mini-models.',
     description: 'PoshPrompt is a strategic AI builder game where you stack tools, apply operators, and craft the strongest AI mini-model to dominate challenges.',
-    images: ['/seo.png'],
+    images: ['https://poshprompt.com/seo.png'],
   },
   robots: {
     index: true,
