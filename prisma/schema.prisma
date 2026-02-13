@@ -25,12 +25,10 @@ model User {
   earnedBalance   Float             @default(0.0)
   earnedXps       Int               @default(0)
   accounts        Account[]
-  chats           Chat[]
   payments        Payment[]
   sessions        Session[]
   fingerprints    UserFingerprint[]
   miniModels      MiniModel[]
-  publications    MiniModelPublication[]
   buildingToolsSessions BuildingToolsSession[]
   buildingSessions BuildingSession[]
   builds          Build[]
@@ -100,100 +98,53 @@ model Challenge {
   id            String   @id @default(uuid())
   title         String
   description   String
+  goal          String?  // V2: Challenge goal
+  difficulty    String?  // V2: Beginner/Intermediate/Advanced
   version       Int      @default(1)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
-  // Legacy fields for backward compatibility
-  gameType     String?
-  difficulty   String?
-  modelType    String?
-  modelName    String?
-  task         Json?
-  gameplay     Json?
-  scoring      Json?
-  rewards      Json?
-  maxXpPerTurn Int      @default(100)
-  minScore     Int      @default(0)
+  // Challenge configuration stored in JSON
+  task         Json?    // Challenge task definition
+  gameplay     Json?    // Gameplay configuration
+  scoring      Json?    // Scoring configuration
+  rewards      Json?    // Rewards configuration
+  
   isActive     Boolean  @default(true)
   isFeatured   Boolean  @default(false)
-  week         String?
   
   // New evaluation system fields
   rewardZoneType String  @default("top_n")
   rewardZoneValue Int   @default(3)
   totalPrizePool Float? @default(80.0)
   
+  // Minimum build power requirement
+  minimumBuildPower Float? @default(0.0)
+  
   // Relationships
   builds          Build[]
   buildingSessions BuildingSession[]
   buildingToolsSessions BuildingToolsSession[]
-  
-  // Legacy relationships
-  chats        Chat[]
-  stressTests  StressTest[]
   miniModels   MiniModel[]
-  weeklyRotations WeeklyRotation[]
   rewardEligibilities RewardEligibility[]
   challengePrizes ChallengePrizes[]
 
   @@map("challenge")
 }
 
-model Chat {
-  id          String    @id @default(cuid())
-  userId      String
-  challengeId String
-  isActive    Boolean   @default(true)
-  currentTurn Int       @default(1)
-  totalScore  Int       @default(0)
-  earnedXp    Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages    Message[]
-  miniModel   MiniModel?
-  stressResults StressTestResult[]
-  buildingToolsSession BuildingToolsSession?
-
-  @@index([userId])
-  @@index([challengeId])
-  @@map("chat")
-}
-
-model Message {
-  id         String   @id @default(cuid())
-  chatId     String
-  type       String
-  content    String
-  prompt     String?
-  output     String?
-  score      Int?
-  breakdown  Json?
-  turnNumber Int
-  createdAt  DateTime @default(now())
-  chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-
-  @@index([chatId])
-  @@index([type])
-  @@map("message")
-}
 
 model BuildingToolsSession {
   id          String   @id @default(cuid())
-  chatId      String   @unique
+  sessionId   String   @unique
   challengeId String
   userId      String
   options     Json     // Store the 6 building tool options
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
   challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([chatId])
   @@index([challengeId])
   @@index([userId])
   @@map("building_tools_session")
@@ -254,44 +205,11 @@ model UserFingerprint {
   @@map("user_fingerprint")
 }
 
-model StressTest {
-  id          String   @id @default(cuid())
-  challengeId String
-  testCase    String
-  testType    String   // adversarial, edge_case, contradictory, extreme_constraint, out_of_distribution
-  expected    Json?    // Expected response pattern
-  weight      Float    @default(1.0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  results     StressTestResult[]
-
-  @@map("stress_test")
-}
-
-model StressTestResult {
-  id          String   @id @default(cuid())
-  stressTestId String
-  chatId      String
-  miniModelId String
-  output      String
-  score       Float
-  passed      Boolean
-  breakdown   Json?
-  createdAt   DateTime @default(now())
-  stressTest  StressTest @relation(fields: [stressTestId], references: [id], onDelete: Cascade)
-  chat        Chat       @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  miniModel   MiniModel  @relation(fields: [miniModelId], references: [id], onDelete: Cascade)
-
-  @@map("stress_test_result")
-}
-
 model MiniModel {
   id             String   @id @default(cuid())
   userId         String
   challengeId    String
-  chatId         String   @unique
+  sessionId      String   @unique
   title          String
   description    String?
   image          String?
@@ -312,41 +230,15 @@ model MiniModel {
   isRewardEligible Boolean @default(false)
   internalRank   Int?     // Internal ranking (hidden from users)
   
+  // Cumulative model features (stored as JSON)
+  cumulativeFeatures Json?  // {robustness: number, accuracy: number, stability: number, creativity: number, efficiency: number}
+  recommendedStrategy Json? // Auto-selected strategy based on challenge goals
+  
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   challenge      Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  chat           Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  stressResults  StressTestResult[]
-  publications   MiniModelPublication[]
   rewardEligibility RewardEligibility?
 
   @@map("mini_model")
-}
-
-model MiniModelPublication {
-  id          String   @id @default(cuid())
-  miniModelId String
-  publisherId String
-  publishedAt DateTime @default(now())
-  downloads   Int      @default(0)
-  rating      Float?   @default(0)
-  reviews     Int      @default(0)
-  miniModel   MiniModel @relation(fields: [miniModelId], references: [id], onDelete: Cascade)
-  publisher   User      @relation(fields: [publisherId], references: [id], onDelete: Cascade)
-
-  @@map("mini_model_publication")
-}
-
-model WeeklyRotation {
-  id           String   @id @default(cuid())
-  week         String   @unique // e.g., "2026-W07"
-  theme        String
-  featuredId   String
-  activeIds    Json     // Array of challenge IDs
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  featuredChallenge Challenge @relation(fields: [featuredId], references: [id])
-
-  @@map("weekly_rotation")
 }
 
 model RewardEligibility {
@@ -404,6 +296,8 @@ model SessionTool {
   description String
   icon        String
   promptCost  Int
+  // V2 features for this tool
+  features    Json?    // Store tool features (robustness, accuracy, etc.)
   category    SessionCategory @relation(fields: [categoryId], references: [id])
   categoryId  String
   session     BuildingSession @relation(fields: [sessionId], references: [id])
@@ -415,10 +309,9 @@ model SessionTool {
 
 model SessionPointMap {
   id                    String   @id @default(uuid())
-  baseMultiplier        Float
-  categoryDiversityBonus Int
-  maxStrength           Int
-  synergyRules          Json
+  v2Data                Json?    // Complete v2 data structure
+  archetypes            Json?    // Archetype definitions
+  platformMetadata      Json?    // Platform metadata
   session               BuildingSession @relation(fields: [sessionId], references: [id])
   sessionId             String   @unique
   createdAt             DateTime @default(now())
@@ -436,6 +329,9 @@ model Build {
   sessionId     String
   selectedTools Json
   strength      Float
+  // V2 fields
+  v2ScoringResult Json?  // Complete v2 scoring breakdown
+  selectedArchetype Json? // Selected archetype for this build
   createdAt     DateTime @default(now())
 
   @@map("build")

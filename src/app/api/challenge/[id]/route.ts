@@ -28,7 +28,6 @@ export async function GET(
       version: challenge.version,
       isActive: challenge.isActive,
       isFeatured: challenge.isFeatured,
-      week: challenge.week,
       rewardZoneType: challenge.rewardZoneType,
       rewardZoneValue: challenge.rewardZoneValue,
       totalPrizePool: challenge.totalPrizePool

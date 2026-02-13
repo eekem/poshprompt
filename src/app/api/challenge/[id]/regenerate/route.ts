@@ -7,6 +7,22 @@ const groq = new Groq({
   apiKey: process.env.HUGGINGFACE_API_KEY
 });
 
+// Helper function to calculate tool count based on difficulty
+function getToolCount(difficulty?: string): number {
+  switch (difficulty?.toLowerCase()) {
+    case 'easy':
+      return Math.floor(Math.random() * 11) + 10; // 10-20 tools
+    case 'medium':
+      return Math.floor(Math.random() * 16) + 20; // 20-35 tools
+    case 'hard':
+      return Math.floor(Math.random() * 16) + 35; // 35-50 tools
+    case 'expert':
+      return Math.floor(Math.random() * 21) + 50; // 50-70 tools
+    default:
+      return Math.floor(Math.random() * 21) + 10; // 10-30 tools for undefined difficulty
+  }
+}
+
 interface GrokChallengeResponse {
   title: string;
   description: string;
@@ -62,6 +78,7 @@ export async function POST(
     }
 
     // Generate new challenge content using Grok (for reference/example)
+    const toolCount = getToolCount(challenge.difficulty || undefined);
     const grokPrompt = `Generate a challenging AI building scenario with tools and synergy mapping. Return JSON in this exact format:
 
 {
@@ -113,7 +130,7 @@ export async function POST(
 }
 
 Requirements:
-- Generate 15-25 tools total
+- Generate exactly ${toolCount} tools total
 - Create 3-5 categories
 - Each tool should have promptCost between 1-10
 - Include 3-8 synergy rules
@@ -139,7 +156,7 @@ Requirements:
               content: grokPrompt
             }
           ],
-          max_tokens: 2000,
+          max_tokens: 4000, // Increased for higher tool counts
           temperature: 0.8,
           response_format: { type: 'json_object' }
         });
@@ -151,8 +168,16 @@ Requirements:
 
         grokResponse = JSON.parse(content);
         
+        console.log('Grok response received:', JSON.stringify(grokResponse, null, 2));
+        
         // Validate response structure
         if (!grokResponse.title || !grokResponse.categories || !grokResponse.tools || !grokResponse.pointMap) {
+          console.error('Missing fields:', {
+            title: !!grokResponse.title,
+            categories: !!grokResponse.categories,
+            tools: !!grokResponse.tools,
+            pointMap: !!grokResponse.pointMap
+          });
           throw new Error('Invalid response structure');
         }
 

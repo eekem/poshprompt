@@ -17,16 +17,16 @@ export async function GET(request: NextRequest) {
     // Get leaderboard for this challenge
     let leaderboard = [];
     try {
-      leaderboard = await prisma.chat.findMany({
+      leaderboard = await prisma.miniModel.findMany({
         where: {
           challengeId: challengeId,
-          isActive: true, // Only include completed challenges
+          isPublished: true, // Only include completed/published models
         },
         select: {
           id: true,
-          totalScore: true,
-          earnedXp: true,
-          currentTurn: true,
+          finalScore: true,
+          totalXp: true,
+          coinsEarned: true,
           createdAt: true,
           user: {
             select: {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: {
-          totalScore: 'desc',
+          finalScore: 'desc',
         },
         take: 100, // Top 100 players
       });
@@ -93,9 +93,9 @@ export async function GET(request: NextRequest) {
         userId: entry.user.id,
         userName: entry.user.name || entry.user.email,
         userImage: entry.user.image,
-        totalScore: entry.totalScore,
-        earnedXp: entry.earnedXp,
-        turns: entry.currentTurn,
+        totalScore: entry.finalScore,
+        earnedXp: entry.totalXp,
+        turns: null, // MiniModel doesn't have currentTurn field
         prize,
         completedAt: entry.createdAt,
       };

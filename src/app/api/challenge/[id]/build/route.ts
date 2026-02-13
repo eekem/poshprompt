@@ -1,22 +1,162 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { ScoringService } from '@/lib/scoringService';
+
+// V3 Scoring Engine (using mathematical operations)
+const calculateV3Score = (
+  selectedTools: string[],
+  pointMap: any,
+  selectedArchetype?: any
+) => {
+  // Import the scoring service method
+  const { ScoringService } = require('@/lib/scoringService');
+  return ScoringService.calculateV3Score(selectedTools, pointMap, selectedArchetype);
+};
 
 interface BuildRequest {
   sessionId: string;
   selectedToolSlugs: string[];
+  selectedArchetype?: any; // V2: Selected archetype
 }
 
 interface BuildResponse {
   strength: number;
   newTotalStrength: number;
   remainingPrompts: number;
-  breakdown: {
-    baseScore: number;
-    diversityBonus: number;
-    synergyBonus: number;
-    totalPromptCost: number;
+  // V3 response structure
+  v3ScoringResult?: {
+    finalStrength: number;
+    featureBreakdown: any;
+    penaltyBreakdown: any;
+    operationResult: {
+      formula: string;
+      calculatedValue: number;
+      toolOperations: Array<{
+        toolSlug: string;
+        operation: string;
+        value: number;
+        strength: number;
+      }>;
+    };
   };
 }
+
+// Auto-select strategy based on challenge goals
+const selectOptimalStrategy = (challenge: any, archetypes: any[]) => {
+  if (!challenge.goal || !archetypes || archetypes.length === 0) {
+    return null;
+  }
+  
+  // Analyze challenge goal to determine optimal strategy
+  const goal = challenge.goal.toLowerCase();
+  const difficulty = challenge.difficulty?.toLowerCase();
+  
+  // Strategy selection logic based on goal and difficulty
+  if (goal.includes('stability') || goal.includes('reliable') || goal.includes('consistent')) {
+    return archetypes.find(a => a.type === 'Guardian');
+  }
+  
+  if (goal.includes('speed') || goal.includes('fast') || goal.includes('quick') || goal.includes('efficient')) {
+    return archetypes.find(a => a.type === 'SpeedRunner');
+  }
+  
+  if (goal.includes('creative') || goal.includes('innovative') || goal.includes('original')) {
+    return archetypes.find(a => a.type === 'Creator');
+  }
+  
+  // Fallback based on difficulty
+  if (difficulty === 'beginner') {
+    return archetypes.find(a => a.type === 'Guardian'); // Safe choice
+  } else if (difficulty === 'advanced') {
+    return archetypes.find(a => a.type === 'Creator'); // High potential
+  }
+  
+  // Default to first available strategy
+  return archetypes[0] || null;
+};
+
+// Update cumulative features
+const updateCumulativeFeatures = async (
+  userId: string, 
+  challengeId: string, 
+  currentBuildFeatures: any
+) => {
+  // Get existing model
+  const existingModel = await prisma.miniModel.findFirst({
+    where: { userId, challengeId }
+  });
+  
+  let cumulativeFeatures = {
+    robustness: 0,
+    accuracy: 0,
+    stability: 0,
+    creativity: 0,
+    efficiency: 0
+  };
+  
+  // Load existing cumulative features
+  if (existingModel && existingModel.cumulativeFeatures) {
+    cumulativeFeatures = existingModel.cumulativeFeatures as any;
+  }
+  
+  // Update with new build (weighted average approach)
+  const buildWeight = 0.3; // Weight for new build
+  const existingWeight = 0.7; // Weight for existing cumulative
+  
+  const updatedFeatures = {
+    robustness: Math.round(
+      existingWeight * cumulativeFeatures.robustness + 
+      buildWeight * currentBuildFeatures.robustness
+    ),
+    accuracy: Math.round(
+      existingWeight * cumulativeFeatures.accuracy + 
+      buildWeight * currentBuildFeatures.accuracy
+    ),
+    stability: Math.round(
+      existingWeight * cumulativeFeatures.stability + 
+      buildWeight * currentBuildFeatures.stability
+    ),
+    creativity: Math.round(
+      existingWeight * cumulativeFeatures.creativity + 
+      buildWeight * currentBuildFeatures.creativity
+    ),
+    efficiency: Math.round(
+      existingWeight * cumulativeFeatures.efficiency + 
+      buildWeight * currentBuildFeatures.efficiency
+    )
+  };
+  
+  // Update or create model with cumulative features
+  const existingRecord = await prisma.miniModel.findFirst({
+    where: { userId, challengeId }
+  });
+  
+  if (existingRecord) {
+    await prisma.miniModel.update({
+      where: { id: existingRecord.id },
+      data: {
+        cumulativeFeatures: updatedFeatures
+      }
+    });
+  } else {
+    await prisma.miniModel.create({
+      data: {
+        userId,
+        challengeId,
+        sessionId: '',
+        title: 'AI Model',
+        systemPrompt: '',
+        finalScore: 0,
+        robustnessScore: 0,
+        totalXp: 0,
+        coinsEarned: 0,
+        cumulativeFeatures: updatedFeatures as any
+      } as any
+    });
+  }
+  
+  return updatedFeatures;
+};
 
 export async function POST(
   request: NextRequest,
@@ -25,7 +165,7 @@ export async function POST(
   try {
     const { id: challengeId } = await params;
     const body: BuildRequest = await request.json();
-    const { sessionId, selectedToolSlugs } = body;
+    const { sessionId, selectedToolSlugs, selectedArchetype: userSelectedArchetype } = body;
 
     // Validate input
     if (!sessionId || !selectedToolSlugs || !Array.isArray(selectedToolSlugs) || selectedToolSlugs.length === 0) {
@@ -102,9 +242,9 @@ export async function POST(
       );
     }
 
-    if (!session.pointMap) {
+    if (!session.pointMap || !session.pointMap.v2Data) {
       return NextResponse.json(
-        { error: 'Session point map not configured' },
+        { error: 'Session pointMap data not configured' },
         { status: 400 }
       );
     }
@@ -120,8 +260,12 @@ export async function POST(
       );
     }
 
-    // Calculate total prompt cost
-    const totalPromptCost = selectedTools.reduce((sum, tool) => sum + tool.promptCost, 0);
+    // Calculate total prompt cost using pointMap data
+    const pointMap = session.pointMap.v2Data as any;
+    const totalPromptCost = selectedToolSlugs.reduce((sum, toolSlug) => {
+      const tool = pointMap.tools.find((t: any) => t.slug === toolSlug);
+      return sum + (tool?.prompt_cost || 0);
+    }, 0);
 
     // Check user's prompt credits
     const user = await prisma.user.findUnique({
@@ -143,32 +287,13 @@ export async function POST(
       );
     }
 
-    // Calculate strength using the formula
-    const pointMap = session.pointMap;
-    
-    // Base score calculation
-    const baseScore = totalPromptCost * pointMap.baseMultiplier;
+    // Auto-select strategy based on challenge goals
+    const optimalStrategy = selectOptimalStrategy(session.challenge, pointMap.archetypes || []);
+    const selectedArchetype = userSelectedArchetype || optimalStrategy;
 
-    // Diversity bonus calculation
-    const selectedCategories = new Set(selectedTools.map(tool => tool.categoryId));
-    const diversityBonus = selectedCategories.size > 1 ? pointMap.categoryDiversityBonus : 0;
-
-    // Synergy bonus calculation
-    let synergyBonus = 0;
-    const selectedToolSlugsSet = new Set(selectedToolSlugs);
-    
-    for (const rule of pointMap.synergyRules as any[]) {
-      const ruleTools = rule.tools as string[];
-      const isRuleSatisfied = ruleTools.every(toolSlug => selectedToolSlugsSet.has(toolSlug));
-      
-      if (isRuleSatisfied) {
-        synergyBonus += rule.bonus;
-      }
-    }
-
-    // Calculate final strength
-    const rawStrength = baseScore + diversityBonus + synergyBonus;
-    const finalStrength = Math.min(rawStrength, pointMap.maxStrength);
+    // Calculate strength using V3 scoring service
+    const scoringResult = ScoringService.calculateV3Score(selectedToolSlugs, pointMap, selectedArchetype);
+    const finalStrength = scoringResult.finalStrength;
 
     // Deduct prompt credits
     await prisma.user.update({
@@ -178,14 +303,19 @@ export async function POST(
       }
     });
 
-    // Save build record
+    // Update cumulative features
+    await updateCumulativeFeatures(userId, challengeId, scoringResult.featureBreakdown);
+    
+    // Save build record with v2 data
     await prisma.build.create({
       data: {
         userId,
         challengeId,
         sessionId,
         selectedTools: selectedToolSlugs,
-        strength: finalStrength
+        strength: finalStrength,
+        v2ScoringResult: scoringResult as any,
+        selectedArchetype: selectedArchetype || null
       }
     });
 
@@ -219,12 +349,7 @@ export async function POST(
       strength: Math.round(finalStrength),
       newTotalStrength: Math.round(newTotalStrength),
       remainingPrompts: updatedUser?.prompts || 0,
-      breakdown: {
-        baseScore: Math.round(baseScore),
-        diversityBonus,
-        synergyBonus,
-        totalPromptCost
-      }
+      v3ScoringResult: scoringResult
     };
 
     return NextResponse.json(response);

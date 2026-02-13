@@ -82,64 +82,29 @@ CREATE TABLE "challenge" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "goal" TEXT,
+    "difficulty" TEXT,
     "version" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "gameType" TEXT,
-    "difficulty" TEXT,
-    "modelType" TEXT,
-    "modelName" TEXT,
     "task" JSONB,
     "gameplay" JSONB,
     "scoring" JSONB,
     "rewards" JSONB,
-    "maxXpPerTurn" INTEGER NOT NULL DEFAULT 100,
-    "minScore" INTEGER NOT NULL DEFAULT 0,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "isFeatured" BOOLEAN NOT NULL DEFAULT false,
-    "week" TEXT,
     "rewardZoneType" TEXT NOT NULL DEFAULT 'top_n',
     "rewardZoneValue" INTEGER NOT NULL DEFAULT 3,
     "totalPrizePool" DOUBLE PRECISION DEFAULT 80.0,
+    "minimumBuildPower" DOUBLE PRECISION DEFAULT 0.0,
 
     CONSTRAINT "challenge_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "chat" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "challengeId" TEXT NOT NULL,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "currentTurn" INTEGER NOT NULL DEFAULT 1,
-    "totalScore" INTEGER NOT NULL DEFAULT 0,
-    "earnedXp" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "chat_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "message" (
-    "id" TEXT NOT NULL,
-    "chatId" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
-    "prompt" TEXT,
-    "output" TEXT,
-    "score" INTEGER,
-    "breakdown" JSONB,
-    "turnNumber" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "message_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "building_tools_session" (
     "id" TEXT NOT NULL,
-    "chatId" TEXT NOT NULL,
+    "sessionId" TEXT NOT NULL,
     "challengeId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "options" JSONB NOT NULL,
@@ -201,43 +166,14 @@ CREATE TABLE "user_fingerprint" (
 );
 
 -- CreateTable
-CREATE TABLE "stress_test" (
-    "id" TEXT NOT NULL,
-    "challengeId" TEXT NOT NULL,
-    "testCase" TEXT NOT NULL,
-    "testType" TEXT NOT NULL,
-    "expected" JSONB,
-    "weight" DOUBLE PRECISION NOT NULL DEFAULT 1.0,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "stress_test_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "stress_test_result" (
-    "id" TEXT NOT NULL,
-    "stressTestId" TEXT NOT NULL,
-    "chatId" TEXT NOT NULL,
-    "miniModelId" TEXT NOT NULL,
-    "output" TEXT NOT NULL,
-    "score" DOUBLE PRECISION NOT NULL,
-    "passed" BOOLEAN NOT NULL,
-    "breakdown" JSONB,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "stress_test_result_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "mini_model" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "challengeId" TEXT NOT NULL,
-    "chatId" TEXT NOT NULL,
+    "sessionId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
+    "image" TEXT,
     "systemPrompt" TEXT NOT NULL,
     "finalScore" DOUBLE PRECISION NOT NULL,
     "robustnessScore" DOUBLE PRECISION NOT NULL,
@@ -252,34 +188,10 @@ CREATE TABLE "mini_model" (
     "percentile" DOUBLE PRECISION,
     "isRewardEligible" BOOLEAN NOT NULL DEFAULT false,
     "internalRank" INTEGER,
+    "cumulativeFeatures" JSONB,
+    "recommendedStrategy" JSONB,
 
     CONSTRAINT "mini_model_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "mini_model_publication" (
-    "id" TEXT NOT NULL,
-    "miniModelId" TEXT NOT NULL,
-    "publisherId" TEXT NOT NULL,
-    "publishedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "downloads" INTEGER NOT NULL DEFAULT 0,
-    "rating" DOUBLE PRECISION DEFAULT 0,
-    "reviews" INTEGER NOT NULL DEFAULT 0,
-
-    CONSTRAINT "mini_model_publication_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "weekly_rotation" (
-    "id" TEXT NOT NULL,
-    "week" TEXT NOT NULL,
-    "theme" TEXT NOT NULL,
-    "featuredId" TEXT NOT NULL,
-    "activeIds" JSONB NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "weekly_rotation_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -326,6 +238,7 @@ CREATE TABLE "session_tool" (
     "description" TEXT NOT NULL,
     "icon" TEXT NOT NULL,
     "promptCost" INTEGER NOT NULL,
+    "features" JSONB,
     "categoryId" TEXT NOT NULL,
     "sessionId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -336,10 +249,9 @@ CREATE TABLE "session_tool" (
 -- CreateTable
 CREATE TABLE "session_point_map" (
     "id" TEXT NOT NULL,
-    "baseMultiplier" DOUBLE PRECISION NOT NULL,
-    "categoryDiversityBonus" INTEGER NOT NULL,
-    "maxStrength" INTEGER NOT NULL,
-    "synergyRules" JSONB NOT NULL,
+    "v2Data" JSONB,
+    "archetypes" JSONB,
+    "platformMetadata" JSONB,
     "sessionId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -354,6 +266,8 @@ CREATE TABLE "build" (
     "sessionId" TEXT NOT NULL,
     "selectedTools" JSONB NOT NULL,
     "strength" DOUBLE PRECISION NOT NULL,
+    "v2ScoringResult" JSONB,
+    "selectedArchetype" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "build_pkey" PRIMARY KEY ("id")
@@ -378,22 +292,7 @@ CREATE INDEX "account_userId_idx" ON "account"("userId");
 CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 
 -- CreateIndex
-CREATE INDEX "chat_userId_idx" ON "chat"("userId");
-
--- CreateIndex
-CREATE INDEX "chat_challengeId_idx" ON "chat"("challengeId");
-
--- CreateIndex
-CREATE INDEX "message_chatId_idx" ON "message"("chatId");
-
--- CreateIndex
-CREATE INDEX "message_type_idx" ON "message"("type");
-
--- CreateIndex
-CREATE UNIQUE INDEX "building_tools_session_chatId_key" ON "building_tools_session"("chatId");
-
--- CreateIndex
-CREATE INDEX "building_tools_session_chatId_idx" ON "building_tools_session"("chatId");
+CREATE UNIQUE INDEX "building_tools_session_sessionId_key" ON "building_tools_session"("sessionId");
 
 -- CreateIndex
 CREATE INDEX "building_tools_session_challengeId_idx" ON "building_tools_session"("challengeId");
@@ -420,10 +319,7 @@ CREATE INDEX "user_fingerprint_fingerprint_idx" ON "user_fingerprint"("fingerpri
 CREATE UNIQUE INDEX "user_fingerprint_userId_fingerprint_key" ON "user_fingerprint"("userId", "fingerprint");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "mini_model_chatId_key" ON "mini_model"("chatId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "weekly_rotation_week_key" ON "weekly_rotation"("week");
+CREATE UNIQUE INDEX "mini_model_sessionId_key" ON "mini_model"("sessionId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "reward_eligibility_miniModelId_key" ON "reward_eligibility"("miniModelId");
@@ -436,18 +332,6 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "chat" ADD CONSTRAINT "chat_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "chat" ADD CONSTRAINT "chat_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "message" ADD CONSTRAINT "message_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "chat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "building_tools_session" ADD CONSTRAINT "building_tools_session_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "chat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "building_tools_session" ADD CONSTRAINT "building_tools_session_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -465,34 +349,10 @@ ALTER TABLE "payment" ADD CONSTRAINT "payment_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "user_fingerprint" ADD CONSTRAINT "user_fingerprint_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "stress_test" ADD CONSTRAINT "stress_test_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "stress_test_result" ADD CONSTRAINT "stress_test_result_stressTestId_fkey" FOREIGN KEY ("stressTestId") REFERENCES "stress_test"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "stress_test_result" ADD CONSTRAINT "stress_test_result_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "chat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "stress_test_result" ADD CONSTRAINT "stress_test_result_miniModelId_fkey" FOREIGN KEY ("miniModelId") REFERENCES "mini_model"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "mini_model" ADD CONSTRAINT "mini_model_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "mini_model" ADD CONSTRAINT "mini_model_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "mini_model" ADD CONSTRAINT "mini_model_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "chat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "mini_model_publication" ADD CONSTRAINT "mini_model_publication_miniModelId_fkey" FOREIGN KEY ("miniModelId") REFERENCES "mini_model"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "mini_model_publication" ADD CONSTRAINT "mini_model_publication_publisherId_fkey" FOREIGN KEY ("publisherId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "weekly_rotation" ADD CONSTRAINT "weekly_rotation_featuredId_fkey" FOREIGN KEY ("featuredId") REFERENCES "challenge"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "reward_eligibility" ADD CONSTRAINT "reward_eligibility_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenge"("id") ON DELETE CASCADE ON UPDATE CASCADE;

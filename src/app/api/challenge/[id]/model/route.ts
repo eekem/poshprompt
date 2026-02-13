@@ -66,15 +66,11 @@ export async function POST(
       );
     }
 
-    // Create a new chat for the model
-    const chat = await prisma.chat.create({
+    // Create a new building session for model
+    const session = await prisma.buildingSession.create({
       data: {
         userId,
         challengeId,
-        isActive: true,
-        currentTurn: 1,
-        totalScore: 0,
-        earnedXp: 0
       }
     });
 
@@ -83,7 +79,7 @@ export async function POST(
       data: {
         userId,
         challengeId,
-        chatId: chat.id,
+        sessionId: session.id,
         title: title.trim(),
         description: `AI model for ${challenge.title}`,
         image: image,

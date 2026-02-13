@@ -3,6 +3,8 @@ import { prisma } from '@/app/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Fetching challenges from database...');
+    
     // Fetch all challenges from the database
     const challenges = await prisma.challenge.findMany({
       select: {
@@ -10,7 +12,6 @@ export async function GET(request: NextRequest) {
         title: true,
         description: true,
         difficulty: true,
-        gameType: true,
         task: true,
         rewards: true,
         createdAt: true,
@@ -19,6 +20,8 @@ export async function GET(request: NextRequest) {
         createdAt: 'asc',
       },
     });
+
+    console.log(`Found ${challenges.length} challenges in database`);
 
     // Transform data to match frontend interface
     const transformedChallenges = challenges.map(challenge => {
@@ -31,7 +34,7 @@ export async function GET(request: NextRequest) {
         title: taskData.title || challenge.title,
         description: taskData.description || challenge.description,
         difficulty: challenge.difficulty,
-        gameType: challenge.gameType,
+        gameType: taskData.gameType || 'text', // Extract from task data or default to 'text'
         estimatedTime: taskData.gameplay?.timeLimitSeconds || 300,
         task: {
           objective: taskData.objective || "",
@@ -59,12 +62,13 @@ export async function GET(request: NextRequest) {
           },
         },
         rewards: {
-          base_xp: taskData.rewards?.base_xp || 50,
-          base_coins: taskData.rewards?.base_coins || 25,
-          completion_bonus: taskData.rewards?.completion_bonus || {},
+          certification: taskData.rewards?.base_xp || 50,
+          tokens: taskData.rewards?.base_coins || 25,
         },
       };
     });
+
+    console.log(`Successfully transformed ${transformedChallenges.length} challenges`);
 
     return NextResponse.json({
       success: true,
@@ -73,6 +77,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching challenges:', error);
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
       {
         success: false,

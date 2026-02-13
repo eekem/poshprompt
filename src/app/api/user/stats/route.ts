@@ -30,31 +30,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get total XP from all completed chats
-    const totalXpResult = await prisma.chat.aggregate({
-      where: {
-        userId: userId,
-      },
-      _sum: {
-        earnedXp: true,
-      },
-    });
-
-    // Calculate earnedBalance (10% of total XP)
-    const totalXP = totalXpResult._sum.earnedXp || 0;
-    const calculatedEarnedBalance = Math.floor(totalXP * 0.1);
-
-    // Update user's earnedXps and earnedBalance if different
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        earnedXps: totalXP,
-        earnedBalance: calculatedEarnedBalance,
-      },
-    });
-
-    // Get total challenges count (unique challenge IDs)
-    const totalChallengesResult = await prisma.chat.findMany({
+    // Get total challenges count (unique challenge IDs from mini models)
+    const totalChallengesResult = await prisma.miniModel.findMany({
       where: {
         userId: userId,
       },
@@ -64,38 +41,22 @@ export async function GET(request: NextRequest) {
       distinct: ['challengeId'],
     });
 
-    // Get ongoing challenges (chats without completion or with low turn count)
-    const ongoingChallengesResult = await prisma.chat.count({
+    // Get ongoing challenges (mini models with low scores - assuming ongoing)
+    const ongoingChallengesResult = await prisma.miniModel.count({
       where: {
         userId: userId,
-        currentTurn: {
-          lte: 3, // Consider challenges with <= 3 turns as ongoing
+        finalScore: {
+          lt: 70, // Consider scores below 70 as ongoing/incomplete
         },
-      },
-    });
-
-    // Get total prompts used (all user messages)
-    const totalPromptsResult = await prisma.message.count({
-      where: {
-        chat: {
-          userId: userId,
-        },
-        type: 'user',
       },
     });
 
     const stats = {
-      user: {
-        prompts: user.prompts,
-        earnedXps: user.earnedXps,
-        earnedBalance: calculatedEarnedBalance,
-      },
-      totalXP: totalXP,
+      totalCertification: user.earnedBalance,
       totalChallenges: totalChallengesResult.length,
       ongoingChallenges: ongoingChallengesResult,
       totalPrompts: user.prompts,
-      earnedBalance: calculatedEarnedBalance,
-      earnedXps: user.earnedXps,
+      tokenBalance: user.earnedBalance,
     };
 
     return NextResponse.json(stats);
@@ -105,13 +66,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to fetch user stats',
-        user: { prompts: 0, earnedXps: 0, earnedBalance: 0.0 },
-        totalXP: 0,
+        totalCertification: 0,
         totalChallenges: 0,
         ongoingChallenges: 0,
         totalPrompts: 0,
-        earnedBalance: 0.0,
-        earnedXps: 0,
+        tokenBalance: 0.0,
       },
       { status: 500 }
     );
