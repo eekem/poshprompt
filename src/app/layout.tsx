@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PoshPrompt | The Premier AI Arena",
-  description: "The world's first competitive arena for prompt engineers. Battle in real-time challenges, level up your rank, and claim loot.",
-  keywords: ["prompt engineering", "AI arena", "competitive programming", "AI challenges", "prompt battles", "AI gaming"],
+  title: "PoshPrompt - Engineer smarter prompts. Build unstoppable mini-models.",
+  description: "PoshPrompt is a strategic AI builder game where you stack tools, apply operators, and craft the strongest AI mini-model to dominate challenges.",
+  keywords: ["prompt engineering", "AI arena", "competitive programming", "AI challenges", "prompt battles", "AI gaming", "mini-models", "AI builder game"],
   authors: [{ name: "PoshPrompt Team" }],
   creator: "PoshPrompt",
   publisher: "PoshPrompt",
@@ -18,16 +18,16 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "PoshPrompt | The Premier AI Arena",
-    description: "The world's first competitive arena for prompt engineers. Battle in real-time challenges, level up your rank, and claim loot.",
+    title: "PoshPrompt - Engineer smarter prompts. Build unstoppable mini-models.",
+    description: "PoshPrompt is a strategic AI builder game where you stack tools, apply operators, and craft the strongest AI mini-model to dominate challenges.",
     url: '/',
     siteName: 'PoshPrompt',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/seo.png',
         width: 1200,
         height: 630,
-        alt: 'PoshPrompt - AI Arena',
+        alt: 'PoshPrompt - Engineer smarter prompts. Build unstoppable mini-models.',
       },
     ],
     locale: 'en_US',
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PoshPrompt | The Premier AI Arena',
-    description: 'The world\'s first competitive arena for prompt engineers. Battle in real-time challenges, level up your rank, and claim loot.',
-    images: ['/og-image.jpg'],
+    title: 'PoshPrompt - Engineer smarter prompts. Build unstoppable mini-models.',
+    description: 'PoshPrompt is a strategic AI builder game where you stack tools, apply operators, and craft the strongest AI mini-model to dominate challenges.',
+    images: ['/seo.png'],
   },
   robots: {
     index: true,
@@ -51,8 +51,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/icon.svg',
-    apple: '/apple-touch-icon.png',
+    icon: '/icon.png',
+    apple: '/icon.png',
   },
   manifest: '/site.webmanifest',
 };

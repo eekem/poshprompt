@@ -271,7 +271,7 @@ export default function Home() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h5 className="text-xs sm:text-sm font-semibold text-white truncate">{tool}</h5>
-                            <p className="text-xs text-slate-400">Cost: {Math.floor(Math.random() * 5) + 3} prompts</p>
+                            <p className="text-xs text-slate-400">Cost: {tool === 'Code Analysis' ? 4 : tool === 'Humor Engine' ? 3 : tool === 'Professional Tone' ? 2 : tool === 'Empathy Module' ? 5 : tool === 'Communication Coach' ? 3 : tool === 'Ethics Guard' ? 4 : tool === 'Requirements Parser' ? 6 : tool === 'Stakeholder Manager' ? 3 : tool === 'Technical Writer' ? 4 : 3} prompts</p>
                           </div>
                           <button className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 text-xs bg-primary text-black rounded font-medium flex-shrink-0">
                             Add

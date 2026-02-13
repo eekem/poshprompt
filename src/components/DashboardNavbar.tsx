@@ -52,7 +52,7 @@ export default function DashboardNavbar({
           <span className="material-symbols-outlined text-[20px]">menu</span>
         </button>
         
-        <div className="size-10 sm:size-12 text-[#f59e0b]">
+        <div className="w-[120px] sm:w-[150px] text-[#f59e0b]">
           <img src="/logo.svg" alt="PoshPrompt" className="w-full h-full" />
         </div>
       </div>

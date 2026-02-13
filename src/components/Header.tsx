@@ -30,10 +30,9 @@ export default function Header() {
             onClick={() => router.push('/')}
             className="flex items-center gap-2 sm:gap-3 text-white hover:text-primary transition-colors"
           >
-            <div className="flex items-center justify-center size-6 sm:size-8 rounded bg-primary/20 text-primary">
-              <span className="material-symbols-outlined text-sm sm:text-xl">terminal</span>
+            <div className="w-[120px] sm:w-[150px]">
+              <img src="/logo.svg" alt="PoshPrompt" className="w-full h-full" />
             </div>
-            <h2 className="text-white text-sm sm:text-lg font-bold leading-tight tracking-tight">PoshPrompt</h2>
           </button>
         </div>
         <nav className="hidden md:flex flex-1 justify-center gap-4 sm:gap-6 lg:gap-8">
@@ -97,10 +96,9 @@ export default function Header() {
                   onClick={() => { router.push('/'); setIsDrawerOpen(false); }}
                   className="flex items-center gap-2 text-white hover:text-primary transition-colors"
                 >
-                  <div className="flex items-center justify-center size-8 rounded bg-primary/20 text-primary">
-                    <span className="material-symbols-outlined text-xl">terminal</span>
+                  <div className="size-12">
+                    <img src="/logo.svg" alt="PoshPrompt" className="w-full h-full" />
                   </div>
-                  <h2 className="text-white text-lg font-bold leading-tight tracking-tight">PoshPrompt</h2>
                 </button>
               </div>
               <button 

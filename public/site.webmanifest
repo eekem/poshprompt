@@ -1,7 +1,7 @@
 {
-  "name": "PoshPrompt - The Premier AI Arena",
+  "name": "PoshPrompt | Strategic AI Building Game",
   "short_name": "PoshPrompt",
-  "description": "The world's first competitive arena for prompt engineers. Battle in real-time challenges, level up your rank, and claim loot.",
+  "description": "Build AI models using limited tools and compete based on how intelligently you combine them. A competitive strategy game of resource management and AI construction.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a1a2e",
@@ -9,12 +9,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/icon.png",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/icon.png",
       "sizes": "180x180",
       "type": "image/png"
     }
